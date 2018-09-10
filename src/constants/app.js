@@ -1,5 +1,5 @@
 export const DEFAULT_CHAR_WIDTH = 8;
-export const DEFAULT_LINE_HEIGHT = 23;
+export const DEFAULT_LINE_HEIGHT = 27.3;
 
 export const FILE_UPLOAD_ID_EDIT_PROFILE = 'FILE_UPLOAD_ID_EDIT_PROFILE';
 
@@ -37,3 +37,5 @@ export const MAP_DEFAULT_LONGITUDE = -122.4324;
 
 export const MAP_LATITUDE_DELTA = 0.04;
 export const MAP_LONGITUDE_DELTA = 0.04;
+
+export const NOTIFICATION_CHANNEL_ID = 'iGap-Plus-Channel';

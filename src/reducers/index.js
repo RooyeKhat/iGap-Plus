@@ -9,7 +9,6 @@ import {navPrimary} from './navPrimary';
 import {intlReducer} from 'react-intl-redux';
 import {modal} from './modal';
 import {fileManager} from './fileManager';
-import {theme} from './theme';
 import methodsReducer from './methods';
 import entities from './entities';
 import messenger from './messenger';
@@ -17,6 +16,8 @@ import {soundPlayer} from './soundPlayer';
 import {layout} from './layout';
 import {METHOD_USER_LOGOUT} from '../actions/methods/user/logout';
 import {updating} from './updating';
+import {snackBar} from './snackBar';
+import {app} from './app';
 
 const appReducer = combineReducers({
   api,
@@ -27,12 +28,13 @@ const appReducer = combineReducers({
   modal,
   fileManager,
   methods: methodsReducer,
-  theme,
   entities,
   messenger,
   soundPlayer,
   layout,
   clientUpdating: updating,
+  snackBar,
+  app,
 });
 
 const rootReducer = (state, action) => {

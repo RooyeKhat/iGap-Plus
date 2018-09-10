@@ -2,15 +2,23 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {Text, View} from 'react-native';
 import {FormattedRelative, injectIntl, intlShape} from 'react-intl';
-import {RippleFeedback, MCIcon} from '../../BaseUI/index';
+import {MCIcon, RippleFeedback} from '../../BaseUI/index';
 import Avatar from '../../../containers/Unit/Avatar';
 import MessageStatus from '../../../containers/Unit/MessageStatus';
-import styles from './index.styles';
+import styleSheet from './index.styles';
 import {metricSuffix} from '../../../utils/core';
+import {appTheme} from '../../../themes/default/index';
+import MemoizeResponsiveStyleSheet from '../../../modules/Responsive/MemoizeResponsiveStyleSheet';
+import Verify from '../../../assets/images/verify';
 
 class RoomListItem extends React.PureComponent {
+  getStyles = () => {
+    return MemoizeResponsiveStyleSheet(styleSheet);
+  };
+
   render() {
-    const {roomId, roomTitle, roomPined, roomMute, selected, lastMessageTitle, lastMessageStatue, lastMessageTime, unreadCount, onPress, onLongPress} = this.props;
+    const styles = this.getStyles();
+    const {roomId, roomTitle, roomPined, roomMute, selected, lastMessageTitle, lastMessageStatue, lastMessageTime, unreadCount, onPress, onLongPress, verified} = this.props;
     return (<RippleFeedback
       onPress={onPress}
       onLongPress={onLongPress}>
@@ -21,7 +29,10 @@ class RoomListItem extends React.PureComponent {
         </View>
         <View style={styles.body}>
           <View style={styles.primary}>
-            <Text numberOfLines={1} style={styles.title}>{roomTitle}</Text>
+            <View style={styles.rowTitle}>
+              <Text numberOfLines={1} style={styles.title}>{roomTitle} </Text>
+              {verified && <Verify style={styles.verifyStyle}/>}
+            </View>
             <View style={styles.addOn}>
               <MessageStatus status={lastMessageStatue} size={15}/>
               <Text style={styles.timeTitle} numberOfLines={1}>
@@ -32,9 +43,11 @@ class RoomListItem extends React.PureComponent {
           <View style={styles.secondary}>
             <Text numberOfLines={1} style={styles.description}>{lastMessageTitle}</Text>
             <View style={styles.addOn}>
-              <Text numberOfLines={1} style={unreadCount ? (roomMute ? styles.muteBadgeStyle : styles.badgeStyle) : styles.hideStyle}>
+              <Text numberOfLines={1}
+                style={unreadCount ? (roomMute ? styles.muteBadgeStyle : styles.badgeStyle) : styles.hideStyle}>
                 {unreadCount ? metricSuffix(unreadCount) : null}</Text>
-              <Text style={roomPined ? styles.pinStyle : styles.hideStyle}><MCIcon name="pin" size={22}/></Text>
+              <Text style={roomPined ? styles.pinStyle : styles.hideStyle}><MCIcon name="pin" size={22}
+                color={appTheme.icon}/></Text>
             </View>
           </View>
         </View>
@@ -61,5 +74,6 @@ RoomListItem.propTypes = {
   lastMessageTime: PropTypes.number,
   unreadCount: PropTypes.number,
   onPress: PropTypes.func,
+  verified: PropTypes.bool,
 };
 export default injectIntl(RoomListItem);

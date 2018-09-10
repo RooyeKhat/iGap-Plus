@@ -1,37 +1,49 @@
 import React from 'react';
-import {Text, View} from 'react-native';
+import {View} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
-import styles from './index.styles';
+import styleSheet from './index.styles';
 import {FlatList, Toolbar} from '../../BaseUI';
 import UserListItem from '../../../containers/Unit/UserListItem';
 import Spinner from '../../BaseUI/Spinner/index';
-import {textTitleStyle} from '../../../themes/default/index';
+import {MemoizeResponsiveStyleSheet} from '../../../modules/Responsive';
+import {arrowBackIcon} from '../../BaseUI/Utile/index';
 
 class ContactPickerComponent extends React.Component {
+
+  getStyles = () => {
+    return MemoizeResponsiveStyleSheet(styleSheet);
+  };
+
   render() {
+    const styles = this.getStyles();
     const {intl, onSubmit, loaderControl, goBack, title, activeSubmitBtn, selectedList, onSelectItem, contactList} = this.props;
     return (
-      <View style={{flex: 1}}>
+      <View style={styles.root}>
         <Toolbar
-          leftElement="arrow-back"
+          leftElement={arrowBackIcon(goBack)}
           rightElement={activeSubmitBtn ? 'done' : null}
           onRightElementPress={onSubmit}
-          onLeftElementPress={goBack}
-          centerElement={<Text style={textTitleStyle}>{intl.formatMessage(title)}</Text>}
+          centerElement={intl.formatMessage(title)}
         />
         <View style={styles.container}>
           <FlatList
             data={contactList}
-            keyExtractor={(item, index) => ('contact-' + item.id)}
+            keyExtractor={this.userKeyExtractor}
             extraData={selectedList}
-            renderItem={({item}) => <UserListItem userId={item.id} onPress={onSelectItem}
-              selected={!!selectedList[item.id]} divider={item.divider}/>}
+            renderItem={this.renderUserItem}
           />
           <Spinner control={loaderControl}/>
         </View>
       </View>
     );
   }
+
+  userKeyExtractor = (item, index) => ('contact-' + item.id);
+  renderUserItem = ({item}) => {
+    const {onSelectItem, selectedList} = this.props;
+    return (<UserListItem userId={item.id} onPress={onSelectItem}
+      selected={!!selectedList[item.id]} divider={item.divider}/>);
+  };
 }
 
 ContactPickerComponent.propTypes = {

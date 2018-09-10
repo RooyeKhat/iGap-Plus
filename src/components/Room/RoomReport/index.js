@@ -7,7 +7,7 @@ import {BasePicker, Form, TextInputField, Toolbar} from '../../BaseUI';
 import i18n from '../../../i18n/index';
 import {MemoizeResponsiveStyleSheet} from '../../../modules/Responsive';
 import {Proto} from '../../../modules/Proto/index';
-import {textTitleStyle} from '../../../themes/default/index';
+import {arrowBackIcon} from '../../BaseUI/Utile/index';
 
 class RoomReportComponent extends Component {
 
@@ -30,8 +30,7 @@ class RoomReportComponent extends Component {
     return (
       <View>
         <Toolbar
-          leftElement="arrow-back"
-          onLeftElementPress={goBack}
+          leftElement={arrowBackIcon(goBack)}
           rightElement="check"
           onRightElementPress={async () => {
             try {
@@ -42,7 +41,7 @@ class RoomReportComponent extends Component {
               this.form.loadingOff();
             }
           }}
-          centerElement={<Text style={textTitleStyle}>{intl.formatMessage(i18n.roomReportTitle)}</Text>}
+          centerElement={intl.formatMessage(i18n.roomReportTitle)}
         />
         <ScrollView style={styles.scroll}>
           <Form style={styles.form} control={(form) => {
@@ -53,6 +52,7 @@ class RoomReportComponent extends Component {
               name="reason"
               label="reason"
               selectedValue={reason}
+              style={styles.piker}
               onValueChange={valueChange}>
               {options.map((item) => (
                 <BasePicker.Item key={'reason-' + item.value} label={item.label} value={item.value}/>))}

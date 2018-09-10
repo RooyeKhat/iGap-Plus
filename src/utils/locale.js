@@ -1,8 +1,14 @@
 import MetaData from '../models/MetaData';
-import {LOCALE_EN} from '../constants/locale';
+import {LOCALE_EN, LOCALES} from '../constants/locale';
 import {METADATA_USER_LOCALE} from '../models/MetaData/constant';
+import {localeChange} from '../actions/locale';
+import store from '../configureStore';
+import {reloadApp} from './app';
+import {I18nManager} from 'react-native';
+import RNRestart from 'react-native-restart';
+import {isEmpty} from 'lodash';
 
-const LOCALE_DEFAULT = LOCALE_EN;
+export const LOCALE_DEFAULT = LOCALE_EN;
 
 let _userLocale;
 
@@ -20,9 +26,22 @@ export async function loadUserLocale() {
 }
 
 export async function changeLocale(locale) {
+
+  if (isEmpty(locale)) {
+    return;
+  }
+
   if (_userLocale !== locale) {
     _userLocale = locale;
     await setUserLocale(locale);
+    I18nManager.forceRTL(LOCALES[locale].rtl);
+    RNRestart.Restart();
+  } else {
+    if (I18nManager.isRTL !== LOCALES[locale].rtl) {
+      I18nManager.forceRTL(LOCALES[locale].rtl);
+      RNRestart.Restart();
+    }
   }
-  // store.dispatch(localeChange(locale));//todo locale uncomment dispatch change local
+  store.dispatch(localeChange(locale));
+  reloadApp();
 }

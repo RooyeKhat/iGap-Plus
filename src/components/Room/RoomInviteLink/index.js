@@ -6,14 +6,20 @@ import styleSheet from './index.styles';
 import {Button, Spinner, Toolbar} from '../../BaseUI';
 import i18n from '../../../i18n/index';
 import {MemoizeResponsiveStyleSheet} from '../../../modules/Responsive';
-import {textTitleStyle} from '../../../themes/default/index';
+import Clipboard from '../../../modules/Clipboard/index';
+import {arrowBackIcon} from '../../BaseUI/Utile/index';
 
 class RoomInviteLinkComponent extends Component {
 
   getStyles = () => {
     return MemoizeResponsiveStyleSheet(styleSheet);
   };
-
+  copyClipboard = () => {
+    const {inviteLink} = this.props;
+    if (Clipboard.isSetSupported) {
+      Clipboard.setString(inviteLink);
+    }
+  };
   onRevokeLinkBtnPress = async () => {
     const {revokeInviteLink} = this.props;
     this.loading.on();
@@ -28,9 +34,8 @@ class RoomInviteLinkComponent extends Component {
     return (
       <View>
         <Toolbar
-          leftElement="arrow-back"
-          onLeftElementPress={goBack}
-          centerElement={<Text style={textTitleStyle}>{intl.formatMessage(i18n.roomInviteLinkToolbarTitle)}</Text>}
+          leftElement={arrowBackIcon(goBack)}
+          centerElement={intl.formatMessage(i18n.roomInviteLinkToolbarTitle)}
         />
 
         <ScrollView style={styles.scroll}>
@@ -44,7 +49,11 @@ class RoomInviteLinkComponent extends Component {
                 {inviteLink}
               </Text>
               <View style={styles.revokeWrap}>
+                <Button raised
+                  text={intl.formatMessage(i18n.roomInviteLinkCopyClipboardBtn)}
+                  onPress={this.copyClipboard}/>
                 <Button raised primary
+                  style={styles.revokeBtn}
                   text={intl.formatMessage(i18n.roomInviteLinkRevokeLinkBtn)}
                   onPress={this.onRevokeLinkBtnPress}/>
               </View>

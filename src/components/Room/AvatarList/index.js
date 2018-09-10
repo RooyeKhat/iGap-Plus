@@ -1,17 +1,17 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {Text, View} from 'react-native';
+import {View} from 'react-native';
 import {MemoizeResponsiveStyleSheet} from '../../../modules/Responsive';
 import {injectIntl, intlShape} from 'react-intl';
 import styleSheet from './index.styles';
 import Gallery from 'react-native-image-gallery';
-import {Toolbar, PopupMenu} from '../../BaseUI/index';
+import {PopupMenu, Toolbar} from '../../BaseUI/index';
 import i18n from '../../../i18n/index';
 import LoadingDots from '../../BaseUI/LoadingDots/index';
 import {menuAction} from '../../../screens/Room/AvatarListScreen';
 import AvatarBox from '../../../containers/Unit/AvatarBox';
-import {textTitleStyle} from '../../../themes/default/index';
 import {APP_MODAL_ID_SECONDARY} from '../../../constants/app';
+import {arrowBackIcon} from '../../BaseUI/Utile/index';
 
 class AvatarListComponent extends Component {
 
@@ -24,12 +24,21 @@ class AvatarListComponent extends Component {
     this.menuActionList = [];
   }
 
+  componentDidMount() {
+    this.setMenuAccessItem(this.props.access);
+  }
+
   componentWillReceiveProps(nextProps) {
+    this.setMenuAccessItem(nextProps.access);
+  }
+
+  setMenuAccessItem = (access) => {
+
     const {intl} = this.props;
     this.menuItem = [];
     this.menuActionList = [];
-    if (nextProps.access) {
-      const {accessDeleteAvatar, accessSaveToGallery, accessShareAvatar} = nextProps.access;
+    if (access) {
+      const {accessDeleteAvatar, accessSaveToGallery, accessShareAvatar} = access;
       if (accessSaveToGallery) {
         this.menuItem.push(intl.formatMessage(i18n.avatarListSaveToGallery));
         this.menuActionList.push(menuAction.save);
@@ -43,7 +52,7 @@ class AvatarListComponent extends Component {
         this.menuActionList.push(menuAction.delete);
       }
     }
-  }
+  };
 
   getStyles = () => {
     return MemoizeResponsiveStyleSheet(styleSheet);
@@ -74,9 +83,8 @@ class AvatarListComponent extends Component {
     return (
       <View style={styles.root}>
         <Toolbar
-          leftElement="arrow-back"
-          onLeftElementPress={goBack}
-          centerElement={<Text style={textTitleStyle}>{imageSelectedIndex + 1} / {avatarList.length}</Text>}
+          leftElement={arrowBackIcon(goBack)}
+          centerElement={(imageSelectedIndex + 1) + '/' + avatarList.length}
           rightElement={(<PopupMenu actionList={this.menuItem} type={APP_MODAL_ID_SECONDARY}
             onPress={(index) => menuClick(this.menuActionList[index], imageSelectedIndex)}/>)}
         />

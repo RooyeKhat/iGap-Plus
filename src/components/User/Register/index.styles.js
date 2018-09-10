@@ -1,24 +1,29 @@
 import {uniqueId} from 'lodash';
 import {ORIENTATION_LANDSCAPE} from '../../../constants/screenBreakPoints';
-import {IRANSans_Medium, Neuropolitical} from '../../../constants/fonts/index';
+import {IRANSans_Medium, Neuropolitical} from '../../../constants/fonts';
+import {appTheme} from '../../../themes/default/index';
+import {I18nManager} from 'react-native';
 
 const id = uniqueId();
+const direction = I18nManager.isRTL ? 'row-reverse' : 'row';
 
-export default (UserRegister) => ([
+export default [
   id,
-  [
+  () => [
     {
       query: {},
       style: {
-        layout: {
-          backgroundColor: UserRegister.layoutBackgroundColor,
-        },
         wrapper: {
+          backgroundColor: appTheme.wrapperBackground,
+        },
+        layout: {
           flex: 1,
           flexDirection: 'column',
+          backgroundColor: appTheme.pageBackground,
         },
         changeLanguageWrap: {
-          flexDirection: 'row', justifyContent: 'center',
+          flexDirection: 'row',
+          justifyContent: 'center',
           zIndex: 10,
         },
         changeLanguagePicker: {
@@ -27,7 +32,7 @@ export default (UserRegister) => ([
             flex: 1,
           },
           touchable: {
-            backgroundColor: UserRegister.changeLanguagePickerBackgrodColor,
+            backgroundColor: appTheme.pageBackground,
             padding: 0,
             borderWidth: 0,
             justifyContent: 'center',
@@ -51,13 +56,13 @@ export default (UserRegister) => ([
         },
         logoWrap: {
           height: 40,
-          flexDirection: 'row',
+          flexDirection: direction,
           justifyContent: 'center',
         },
         headerTitle: {
           ...Neuropolitical,
           fontSize: 30,
-          color: UserRegister.headerTitleColor,
+          color: appTheme.titleText,
         },
         topWrap: {},
         formWrap: {
@@ -67,7 +72,7 @@ export default (UserRegister) => ([
           marginBottom: 15,
         },
         phoneNumberRow: {
-          flexDirection: 'row',
+          flexDirection: direction,
           alignItems: 'flex-start',
         },
         countryCodeInput: {
@@ -83,7 +88,7 @@ export default (UserRegister) => ([
           },
           help: {
             fontSize: 10,
-            color: UserRegister.helpColor,
+            color: appTheme.primaryText,
           },
           error: {
             fontSize: 11,
@@ -97,7 +102,7 @@ export default (UserRegister) => ([
         },
         help: {
           fontSize: 11,
-          color: UserRegister.helpColor,
+          color: appTheme.primaryText,
         },
         countryListItem: {
           container: {backgroundColor: 'transparent', paddingLeft: 0},
@@ -116,14 +121,16 @@ export default (UserRegister) => ([
           container: {
             borderWidth: 0,
             marginTop: 5,
-            marginBottom: 5,
           },
           text: {
             fontSize: 10,
-            color: UserRegister.privacyBtnColor,
+            color: appTheme.primaryText,
           },
         },
-
+        privacy: {
+          flexDirection: 'row',
+          justifyContent: 'center',
+        },
         divider: {
           flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
         },
@@ -134,10 +141,9 @@ export default (UserRegister) => ([
           height: 20,
           width: 40,
           ...IRANSans_Medium,
-          color: UserRegister.dividerTitleColor,
+          color: appTheme.border,
           fontSize: 12,
           textAlign: 'center',
-          backgroundColor: UserRegister.dividerTitleBackgroundColor,
         },
         qrLoginBtn: {
           container: {
@@ -172,4 +178,4 @@ export default (UserRegister) => ([
       },
     },
   ],
-]);
+];

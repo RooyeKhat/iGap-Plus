@@ -45,7 +45,7 @@ import {
   ROOM_MESSAGE_ATTACHMENT_TYPE_VIDEO,
   ROOM_MESSAGE_ATTACHMENT_TYPE_VOICE,
 } from '../constants/app';
-import {msSleep, tNow} from './core';
+import {msSleep, prependFileProtocol, tNow} from './core';
 import {messengerRoomMessageConcat, messengerRoomMessageReplace} from '../actions/messenger/roomMessages';
 
 import {normalize} from 'normalizr';
@@ -56,6 +56,10 @@ import {entitiesRoomMessageEdit, entitiesRoomMessagesAdd} from '../actions/entit
 import {fileManagerUpload, fileManagerUploadDisposed} from '../actions/fileManager';
 import Collector from '../modules/Collector';
 import {messengerRoomAddList} from '../actions/messenger/rooms';
+import VideoCompress from '../modules/VideoCompress';
+import {clearNotification} from '../modules/Notification/index';
+import RNIGFileSystem from 'react-native-file-system';
+import {Platform} from 'react-native';
 
 /**
  * @type {string} current Focus Room
@@ -81,6 +85,7 @@ let _viewedMessages = {};
 export function focusRoom(roomId) {
   _focusRoom = roomId;
   seenDeliveredMessages(roomId);
+  clearNotification(roomId);
 }
 
 /**
@@ -214,6 +219,7 @@ export async function sendMessage(roomId, text, pickedFile, attachmentType, repl
           case ROOM_MESSAGE_ATTACHMENT_TYPE_VIDEO:
             proto.setMessageType(text ? Proto.RoomMessageType.VIDEO_TEXT : Proto.RoomMessageType.VIDEO);
             sendingAction = Proto.ClientAction.SENDING_VIDEO;
+            await __compressVideo();
             break;
           case ROOM_MESSAGE_ATTACHMENT_TYPE_AUDIO:
             proto.setMessageType(text ? Proto.RoomMessageType.AUDIO_TEXT : Proto.RoomMessageType.AUDIO);
@@ -259,6 +265,7 @@ export async function sendMessage(roomId, text, pickedFile, attachmentType, repl
     store.dispatch(messengerRoomMessageReplace(room.id, normalizedRoomMessage.id, fakeIdToString));
 
   } catch (e) {
+    console.warn('sendMessageFiled', e);
     store.dispatch(entitiesRoomMessageEdit(fakeIdToString, {
       status: Proto.RoomMessageStatus.FAILED,
     }));
@@ -324,6 +331,12 @@ export async function sendMessage(roomId, text, pickedFile, attachmentType, repl
 
     store.dispatch(entitiesRoomMessagesAdd({[normalizedRoomMessage.id]: normalizedRoomMessage}));
     store.dispatch(messengerRoomMessageConcat(room.id, [normalizedRoomMessage.id], false));
+  }
+
+  async function __compressVideo() {
+    const source = await VideoCompress.compress(prependFileProtocol(pickedFile.fileUri));
+    pickedFile = await RNIGFileSystem.fInfo(Platform.OS === 'ios' ? source.replace('file://', '') : source);
+    store.dispatch(entitiesRoomMessageEdit(fakeId.toString(), {pickedFile}));
   }
 }
 
@@ -480,9 +493,10 @@ export async function editRoomMessage(roomId, longMessageId, text) {
  * delete Message List
  * @param roomId
  * @param {string[]} messages
+ * @param {boolean} both
  * @returns {Promise.<void>}
  */
-export async function deleteMessages(roomId, messages) {
+export async function deleteMessages(roomId, messages, both) {
   const promiseList = [];
   let actionId, proto;
   const room = store.getState().entities.rooms[roomId];
@@ -508,6 +522,9 @@ export async function deleteMessages(roomId, messages) {
     const deleteMessage = new proto();
     deleteMessage.setRoomId(room.longId);
     deleteMessage.setMessageId(Long.fromString(messageId));
+    if (both) {
+      deleteMessage.setBoth(both);
+    }
     promiseList.push(Api.invoke(actionId, deleteMessage));
   });
   await Promise.all(promiseList);
@@ -565,7 +582,7 @@ export function sendActionRequest(roomId, action, actionId = null) {
  */
 export function getLogMessageParams(message, details) {
 
-  let params = {};
+  let params = null;
   const targetUserId = message.log.getTargetUser() ? message.log.getTargetUser().getId().toString() : null;
 
   const roomType = details.roomType;
@@ -831,8 +848,8 @@ export async function processUnresolvedMessageStatus(roomId) {
 }
 
 export function getMessageStats(roomId, messageId) {
-  if (!_viewedMessages[messageId]) {
-    _viewedMessages[messageId] = true;
+  if (!_viewedMessages[messageId.toString()]) {
+    _viewedMessages[messageId.toString()] = true;
     collect({roomId, messageId});
   }
 }

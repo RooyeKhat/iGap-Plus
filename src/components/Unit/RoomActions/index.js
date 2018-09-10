@@ -1,16 +1,23 @@
 /* eslint-disable import/no-unresolved, import/extensions */
 import React, {PureComponent} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
-import {primary} from '../../../themes/default/index';
+import {Text, View} from 'react-native';
+import {appTheme} from '../../../themes/default/index';
 import {FormattedMessage} from 'react-intl';
 import i18n from '../../../i18n';
+import {uniqueId} from 'lodash';
 import {Proto} from '../../../modules/Proto/index';
+import MemoizeResponsiveStyleSheet from '../../../modules/Responsive/MemoizeResponsiveStyleSheet';
+import {IRANSans_Bold} from '../../../constants/fonts/index';
 
 class RoomActions extends PureComponent {
 
+  getStyles = () => {
+    return MemoizeResponsiveStyleSheet(styleSheet);
+  };
+
   render() {
     const {actionList, roomType} = this.props;
-
+    const styles = this.getStyles();
     if (!actionList || !actionList.length) {
       return null;
     }
@@ -30,18 +37,28 @@ RoomActions.propTypes = {};
 
 export default RoomActions;
 
-const styles = StyleSheet.create({
-  container: {
-    top: -40,
-    padding: 5,
-    borderRadius: 15,
-    backgroundColor: primary,
-    alignSelf: 'center',
-    position: 'absolute',
+const uId = uniqueId();
+const styleSheet = [
+  uId,
+  () => [
+    {
+      query: {},
+      style: {
+        container: {
+          top: -40,
+          padding: 5,
+          borderRadius: 15,
+          backgroundColor: appTheme.primary,
+          alignSelf: 'center',
+          position: 'absolute',
 
-  },
-  textContainer: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-});
+        },
+        textContainer: {
+          ...IRANSans_Bold,
+          color: '#fff',
+        },
+      },
+    },
+  ],
+  true,
+];

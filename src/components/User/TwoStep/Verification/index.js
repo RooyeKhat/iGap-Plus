@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import DimensionLimiter from '../../../BaseUI/DimensionLimiter/index';
 import {Button} from '../../../BaseUI/index';
 import styleSheet from './index.styles';
-import * as _ from 'lodash';
+import {uniqueId} from 'lodash';
 import {NORMAL_HEIGHT, NORMAL_WIDTH} from '../../../../constants/screenBreakPoints';
 import {MemoizeResponsiveStyleSheet, responsive} from '../../../../modules/Responsive';
 import i18n from '../../../../i18n/index';
@@ -12,16 +12,12 @@ import Form from '../../../BaseUI/Form/index';
 import {Text, View} from 'react-native';
 import TextInputField from '../../../BaseUI/Form/fields/TextInputField';
 
-const uniqueId = _.uniqueId();
+const _uniqueId = uniqueId();
 
 class TwoStepVerificationComponent extends Component {
 
-  static contextTypes = {
-    uiTheme: PropTypes.object.isRequired,
-  };
-
   getStyles = () => {
-    return MemoizeResponsiveStyleSheet(styleSheet(this.context.uiTheme.UserTwoStepVerification));
+    return MemoizeResponsiveStyleSheet(styleSheet);
   };
 
   render() {
@@ -29,7 +25,8 @@ class TwoStepVerificationComponent extends Component {
     const styles = this.getStyles();
 
     return (
-      <DimensionLimiter id={uniqueId} width={NORMAL_WIDTH} height={NORMAL_HEIGHT} layoutStyle={styles.layout}>
+      <DimensionLimiter id={_uniqueId} width={NORMAL_WIDTH} height={NORMAL_HEIGHT} layoutStyle={styles.layout}
+        wrapperStyle={styles.wrapper}>
 
         <Form style={styles.panel} control={(form) => {
           this.form = form;

@@ -1,9 +1,12 @@
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 import {IconToggle, ListItem, Modal} from '../../BaseUI/index';
+import MemoizeResponsiveStyleSheet from '../../../modules/Responsive/MemoizeResponsiveStyleSheet';
+import {uniqueId} from 'lodash';
+import {appTheme} from '../../../themes/default/index';
 
-class PopupMenu extends Component {
+class PopupMenu extends PureComponent {
 
   onMenuPressed = () => {
     this.modal.open(true);
@@ -15,11 +18,16 @@ class PopupMenu extends Component {
     }
   };
 
+  getStyles = () => {
+    return MemoizeResponsiveStyleSheet(styleSheet);
+  };
+
   render() {
+    const styles = this.getStyles();
     const {button, onPress, actionList, type} = this.props;
     let element = null;
     if (typeof button === 'string') {
-      element = (<IconToggle onPress={this.onMenuPressed} name={button}/>);
+      element = (<IconToggle onPress={this.onMenuPressed} name={button} color={appTheme.toolbarIcon}/>);
     } else {
       element = (<TouchableOpacity onPress={this.onMenuPressed} activeOpacity={0.9}>{button}</TouchableOpacity>);
     }
@@ -63,17 +71,29 @@ PopupMenu.propTypes = {
 
 export default PopupMenu;
 
-const styles = StyleSheet.create({
-  dialogWrap: {
-    alignSelf: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    margin: 5,
-  },
-  dialog: {
-    width: 280,
-    flexDirection: 'column',
-    backgroundColor: '#fff',
-  },
-});
+const uId = uniqueId();
+const styleSheet = [
+  uId,
+  () => [
+    {
+      query: {},
+      style: {
+        dialogWrap: {
+          alignSelf: 'center',
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          margin: 5,
+        },
+        dialog: {
+          width: 280,
+          flexDirection: 'column',
+          backgroundColor: '#fff',
+          borderRadius: 5,
+          overflow: 'hidden',
+        },
+      },
+    },
+  ],
+  true,
+];

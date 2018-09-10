@@ -27,6 +27,8 @@ import {
   ERROR_USER_REGISTER_MAX_TRY_LOCK,
 } from '../../modules/Api/errors/index';
 import {IRANSans_Medium} from '../../constants/fonts/index';
+import {appTheme} from '../../themes/default/index';
+import {qrMode} from './UserQrCodeLoginScreen';
 
 const rules = {
   phoneNumber: [
@@ -36,6 +38,20 @@ const rules = {
 };
 let phoneNumberRegexValidate;
 
+export function getLocalList(localesList) {
+  keys(LOCALES).map((locale) => {
+    localesList.push({
+      key: locale,
+      value: LOCALES[locale].en,
+      element: (<ListItem
+        centerElement={{primaryText: LOCALES[locale].native || LOCALES[locale].en}}
+        style={{container: {backgroundColor: 'transparent', paddingLeft: 0}, primaryText: {...IRANSans_Medium}}}
+      />),
+      filter: locale,
+    });
+  });
+}
+
 class UserRegisterScreen extends Component {
 
   constructor(props) {
@@ -44,10 +60,33 @@ class UserRegisterScreen extends Component {
       countryCode: '',
       callingCode: '',
       phoneNumber: '',
+      localesList: [],
+      countryList: [],
     };
   }
 
   componentDidMount() {
+    const {intl} = this.props;
+    const {localesList, countryList} = this.state;
+
+    getLocalList(localesList);
+
+    countries.map((country) => {
+      let id = 'country' + country[0];
+      let countryName = intl.formatMessage(i18n[id]);
+      let countryCode = country.slice(1).join();
+      countryList.push({
+        key: country[0],
+        value: countryName,
+        element: (<ListItem
+          centerElement={{primaryText: countryName}}
+          rightElement={<Text style={{color: appTheme.primaryText}}>{countryCode}</Text>}
+          style={{container: {backgroundColor: 'transparent', paddingLeft: 0}, primaryText: {...IRANSans_Medium}}}
+        />),
+        filter: countryName.toLowerCase() + ',' + countryCode,
+      });
+    });
+
     let infoLocation = new InfoLocation();
     Api.invoke(INFO_LOCATION, infoLocation)
       .then((response) => {
@@ -162,38 +201,8 @@ class UserRegisterScreen extends Component {
   };
 
   render() {
-    const {intl} = this.props;
-    const {phoneNumber, callingCode, countryCode} = this.state;
+    const {phoneNumber, callingCode, countryCode, localesList, countryList} = this.state;
     const formData = {phoneNumber, callingCode, countryCode};
-    const countryList = [];
-    const localesList = [];
-
-    keys(LOCALES).map((locale) => {
-      localesList.push({
-        key: locale,
-        value: LOCALES[locale].en,
-        element: (<ListItem
-          centerElement={{primaryText: LOCALES[locale].native || LOCALES[locale].en}}
-          style={{container: {backgroundColor: 'transparent', paddingLeft: 0}, primaryText: {...IRANSans_Medium}}}
-        />),
-        filter: locale,
-      });
-    });
-    countries.map((country) => {
-      let id = 'country' + country[0];
-      let countryName = intl.formatMessage(i18n[id]);
-      let countryCode = country.slice(1).join();
-      countryList.push({
-        key: country[0],
-        value: countryName,
-        element: (<ListItem
-          centerElement={{primaryText: countryName}}
-          rightElement={<Text>{countryCode}</Text>}
-          style={{container: {backgroundColor: 'transparent', paddingLeft: 0}, primaryText: {...IRANSans_Medium}}}
-        />),
-        filter: countryName.toLowerCase() + ',' + countryCode,
-      });
-    });
 
     const defaultLocale = getUserLocale();
     return (
@@ -208,7 +217,7 @@ class UserRegisterScreen extends Component {
         selectNewLocale={this.selectNewLocale}
         defaultLocale={defaultLocale}
         goPrivacyPolicy={goPrivacyPolicy}
-        goUserQrCodeLoginScreen={goUserQrCodeLoginScreen}
+        goUserQrCodeLoginScreen={() => goUserQrCodeLoginScreen(qrMode.LOGIN)}
       />
     );
   }

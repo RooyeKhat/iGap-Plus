@@ -1,5 +1,6 @@
 import React from 'react';
 import {StackNavigator, TabNavigator} from 'react-navigation';
+import {I18nManager, Platform} from 'react-native';
 import {createReactNavigationReduxMiddleware} from 'react-navigation-redux-helpers';
 import {navigate, resetPrimaryNavigation} from './index';
 import MainBottom from '../containers/MainBottom';
@@ -7,6 +8,7 @@ import MainBottom from '../containers/MainBottom';
 import {
   ACTIVE_SESSION_SCREEN,
   CALL_LIST_SCREEN,
+  CHAT_BACKGROUND_SCREEN,
   CONTACT_LIST_SCREEN,
   CONTACT_NEW_SCREEN,
   EDIT_PROFILE_SCREEN,
@@ -28,6 +30,7 @@ import {
   USER_TWO_STEP_SET_PASSWORD_SCREEN,
   USER_TWO_STEP_SETTING_SCREEN,
   USER_TWO_STEP_VERIFY_EMAIL_SCREEN,
+  USER_VERIFY_DELETE_SCREEN,
 } from '../constants/navigators';
 import ProfileScreen from '../screens/MainTabs/ProfileScreen';
 import NearbyScreen from '../screens/MainTabs/NearbyScreen';
@@ -51,6 +54,8 @@ import UserTwoStepChangeHintScreen from '../screens/User/TwoStep/UserTwoStepChan
 import UserTwoStepChangeRecoveryQuestionScreen from '../screens/User/TwoStep/UserTwoStepChangeRecoveryQuestionScreen';
 import UserTwoStepVerifyRecoveryEmailScreen from '../screens/User/TwoStep/UserTwoStepVerifyRecoveryEmail';
 import QrCodeScreen from '../screens/QrCode/QrCodeScreen';
+import UserVerifyDeleteScreen from '../screens/User/UserVerifyDeleteScreen';
+import ChatBackgroundScreen from '../screens/Setting/ChatBackground/ChatBackgroundScreen';
 
 export function goRoomList() {
   navigate(ROOM_LIST_SCREEN);
@@ -88,8 +93,8 @@ export function goEditProfile() {
   navigate(EDIT_PROFILE_SCREEN);
 }
 
-export function goRoomCreate(type, selectedContact = {}) {
-  resetPrimaryNavigation(ROOM_CREATE_SCREEN, {type, selectedContact});
+export function goRoomCreate(type, selectedContact = {}, roomId = null) {
+  resetPrimaryNavigation(ROOM_CREATE_SCREEN, {type, selectedContact, roomId});
 }
 
 export function goRoomUpdateUsername(roomId) {
@@ -141,6 +146,14 @@ export function goQrCode() {
   navigate(QR_CODE_SCREEN);
 }
 
+export function goUserVerifyDeleteScreen(token) {
+  navigate(USER_VERIFY_DELETE_SCREEN, {token});
+}
+
+export function goChatBackGround() {
+  navigate(CHAT_BACKGROUND_SCREEN);
+}
+
 const tabNav = TabNavigator({
   [ROOM_LIST_SCREEN]: {screen: RoomsScreen},
   [NEARBY_SCREEN]: {screen: NearbyScreen},
@@ -150,7 +163,7 @@ const tabNav = TabNavigator({
 }, {
   tabBarComponent: props => (<MainBottom {...props}/>),
   tabBarPosition: 'bottom',
-  swipeEnabled: false,
+  swipeEnabled: (I18nManager.isRTL && Platform.OS === 'ios'),
   lazy: true,
 });
 
@@ -183,6 +196,8 @@ const PrimaryNavigator = StackNavigator({
   [USER_TWO_STEP_CHANGE_RECOVERY_QUESTION_SCREEN]: {screen: UserTwoStepChangeRecoveryQuestionScreen},
   [USER_TWO_STEP_VERIFY_EMAIL_SCREEN]: {screen: UserTwoStepVerifyRecoveryEmailScreen},
   [QR_CODE_SCREEN]: {screen: QrCodeScreen},
+  [USER_VERIFY_DELETE_SCREEN]: {screen: UserVerifyDeleteScreen},
+  [CHAT_BACKGROUND_SCREEN]: {screen: ChatBackgroundScreen},
 });
 
 export default PrimaryNavigator;

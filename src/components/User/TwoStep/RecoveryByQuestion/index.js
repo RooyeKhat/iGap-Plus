@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import {uniqueId} from 'lodash';
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
 import {Button, Toolbar} from '../../../BaseUI/index';
@@ -11,18 +11,14 @@ import {Text, View} from 'react-native';
 import Form from '../../../BaseUI/Form/index';
 import TextInputField from '../../../BaseUI/Form/fields/TextInputField';
 import {MemoizeResponsiveStyleSheet} from '../../../../modules/Responsive';
-import {textTitleStyle} from '../../../../themes/default/index';
+import {arrowBackIcon} from '../../../BaseUI/Utile/index';
 
-const uniqueId = _.uniqueId();
+const _uniqueId = uniqueId();
 
 class UserTwoStepRecoveryByQuestionComponent extends Component {
 
-  static contextTypes = {
-    uiTheme: PropTypes.object.isRequired,
-  };
-
   getStyles = () => {
-    return MemoizeResponsiveStyleSheet(styleSheet(this.context.uiTheme.UserTwoStepRecoveryByQuestion));
+    return MemoizeResponsiveStyleSheet(styleSheet);
   };
 
   render() {
@@ -30,11 +26,12 @@ class UserTwoStepRecoveryByQuestionComponent extends Component {
     const styles = this.getStyles();
 
     return (
-      <DimensionLimiter id={uniqueId} width={NORMAL_WIDTH} height={NORMAL_HEIGHT} layoutStyle={styles.layout}>
+      <DimensionLimiter id={_uniqueId} width={NORMAL_WIDTH} height={NORMAL_HEIGHT} wrapperStyle={styles.wrapper}
+        layoutStyle={styles.layout}>
         <Toolbar
-          leftElement="arrow-back"
-          onLeftElementPress={goBack}
-          centerElement={<Text style={textTitleStyle}>{intl.formatMessage(i18n.twoStepRecoveryByQuestionTitle)}</Text>}
+          leftElement={arrowBackIcon(goBack)}
+          showAuthenticating={false}
+          centerElement={intl.formatMessage(i18n.twoStepRecoveryByQuestionTitle)}
         />
         <Form style={styles.panel} control={(form) => {
           this.form = form;
@@ -80,7 +77,7 @@ class UserTwoStepRecoveryByQuestionComponent extends Component {
                 try {
                   this.form.loadingOn();
                   const data = await this.form.submit();
-                  await handleFormData(data);
+                  await handleFormData(data, this.form.setError);
                 } finally {
                   this.form.loadingOff();
                 }

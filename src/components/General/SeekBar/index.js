@@ -1,45 +1,48 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {
-  gray950,
-  primary,
-} from '../../../themes/default/index';
-import {
-  Animated,
-  StyleSheet,
-  View,
-  PanResponder,
-  Easing,
-} from 'react-native';
+import {appTheme} from '../../../themes/default/index';
+import {Animated, Easing, I18nManager, PanResponder, View} from 'react-native';
+import {uniqueId} from 'lodash';
+import MemoizeResponsiveStyleSheet from '../../../modules/Responsive/MemoizeResponsiveStyleSheet';
 
 const _size = 24;
-const styles = StyleSheet.create({
-  container: {
-    height: _size,
-    backgroundColor: '#0000',
-    marginTop: 3,
-    marginBottom: 3,
-  },
-  background: {
-    backgroundColor: gray950,
-    height: 6,
-    overflow: 'hidden',
-    borderRadius: 2,
-    marginTop: 9,
-  },
-  fill: {
-    backgroundColor: primary,
-    height: 6,
-    borderRadius: 2,
-  },
-  circle: {
-    width: _size,
-    height: _size,
-    borderRadius: _size / 2,
-    backgroundColor: primary,
-    position: 'absolute',
-  },
-});
+const uId = uniqueId();
+const styleSheet = [
+  uId,
+  () => [
+    {
+      query: {},
+      style: {
+        container: {
+          height: _size,
+          backgroundColor: '#0000',
+          marginTop: 3,
+          marginBottom: 3,
+        },
+        background: {
+          backgroundColor: '#7d7d7d',
+          height: 6,
+          overflow: 'hidden',
+          borderRadius: 2,
+          marginTop: 9,
+        },
+        fill: {
+          backgroundColor: appTheme.primary,
+          height: 6,
+          borderRadius: 2,
+        },
+        circle: {
+          width: _size,
+          height: _size,
+          borderRadius: _size / 2,
+          backgroundColor: appTheme.primary,
+          position: 'absolute',
+        },
+      },
+    },
+  ],
+  true,
+];
 
 class SeekBarComponent extends React.Component {
   state = {
@@ -86,6 +89,7 @@ class SeekBarComponent extends React.Component {
   };
 
   componentWillMount() {
+    this.isRTL = I18nManager.isRTL;
     this.xPositionLayout = 0;
     this.onEnd = (evt, gestureState) => {
       if (this.state.isTouching) {
@@ -116,7 +120,12 @@ class SeekBarComponent extends React.Component {
     });
   }
 
+  getStyles = () => {
+    return MemoizeResponsiveStyleSheet(styleSheet);
+  };
+
   render() {
+    const styles = this.getStyles();
     const {width} = this.props;
     const fillWidth = {
       transform: [
@@ -142,13 +151,18 @@ class SeekBarComponent extends React.Component {
     return (
       <View {...this._panResponder.panHandlers} ref="Marker" style={styles.container} onLayout={(event) => {
         this.refs.Marker.measure((x, y, width, height, pageX, pageY) => {
-          this.xPositionLayout = pageX;
+          const xpo = Math.abs(pageX);
+          if (xpo >= width) {
+            this.xPositionLayout = xpo - width;
+          } else {
+            this.xPositionLayout = xpo;
+          }
         });
       }}>
         <View style={[styles.background, {width: width}]}>
           <Animated.View style={[styles.fill, fillWidth]}/>
         </View>
-        <Animated.View style={[styles.circle, circleMove]}/>
+        <Animated.View style={[styles.circle, I18nManager.isRTL ? fillWidth : circleMove]}/>
       </View>
     );
   }

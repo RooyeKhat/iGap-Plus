@@ -9,7 +9,7 @@ import Avatar from '../../../containers/Unit/Avatar';
 import Form from '../../BaseUI/Form/index';
 import TextInputField from '../../BaseUI/Form/fields/TextInputField';
 import {MemoizeResponsiveStyleSheet} from '../../../modules/Responsive';
-import {textTitleStyle} from '../../../themes/default/index';
+import {arrowBackIcon} from '../../BaseUI/Utile/index';
 
 class RoomEditComponent extends Component {
 
@@ -21,11 +21,10 @@ class RoomEditComponent extends Component {
     const {intl, roomId, name, description, uploading, handleFormData, selectPhoto, formRules, goBack} = this.props;
     const styles = this.getStyles();
     return (
-      <View>
+      <View style={styles.root}>
         <Toolbar
-          leftElement="arrow-back"
+          leftElement={arrowBackIcon(goBack)}
           rightElement="check"
-          onLeftElementPress={goBack}
           onRightElementPress={async () => {
             try {
               this.form.loadingOn();
@@ -35,7 +34,7 @@ class RoomEditComponent extends Component {
               this.form.loadingOff();
             }
           }}
-          centerElement={<Text style={textTitleStyle}>{intl.formatMessage(i18n.roomEditToolbarTitle)}</Text>}
+          centerElement={intl.formatMessage(i18n.roomEditToolbarTitle)}
         />
 
         <ScrollView style={styles.scroll}>

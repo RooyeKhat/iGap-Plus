@@ -3,17 +3,13 @@ import {createElement} from 'react';
 import {Text} from 'react-native';
 import _ from 'lodash';
 import SimpleMarkdown from 'simple-markdown';
+import queryString from 'query-string';
 import Linking from '../Linking/index';
-import styles from './index.styles';
-import {
-  ClientCheckInviteLink,
-  ClientResolveUsername,
-} from '../Proto/index';
-import {
-  CLIENT_CHECK_INVITE_LINK,
-  CLIENT_RESOLVE_USERNAME,
-} from '../../constants/methods/index';
+import styleSheet from './index.styles';
+import {ClientCheckInviteLink, ClientResolveUsername} from '../Proto/index';
+import {CLIENT_CHECK_INVITE_LINK, CLIENT_RESOLVE_USERNAME} from '../../constants/methods/index';
 import Api from '../Api/index';
+import MemoizeResponsiveStyleSheet from '../Responsive/MemoizeResponsiveStyleSheet';
 
 const TLD = [
   'abogado', 'ac', 'academy', 'accountants', 'active', 'actor', 'ad', 'adult', 'ae', 'aero', 'af', 'ag', 'agency',
@@ -149,6 +145,7 @@ function checkBrackets(url) {
   return url;
 }
 
+const styles = MemoizeResponsiveStyleSheet(styleSheet);
 const rules = {
   del: {
     react: (node, output, state) => {
@@ -181,6 +178,46 @@ const rules = {
       }, output(node.content, state));
     },
   },
+  linking: {
+    order: SimpleMarkdown.defaultRules.text.order - 0.5,
+    match: SimpleMarkdown.inlineRegex(
+      new RegExp('^igap://([a-z0-9_=?]+)\\s*', 'i')
+    ),
+    parse: function(capture, parse, state) {
+      let url = capture[0];
+      let igap;
+
+      const path = capture[1].split('?');
+      const parsed = queryString.parse(path[1]);
+      switch (_.toLower(path[0])) {
+        case 'join':
+          igap = {
+            type: 'join',
+            token: parsed.invite,
+          };
+          break;
+        case 'resolve':
+          return {
+            type: 'mention',
+            content: [{
+              type: 'text',
+              content: capture[0],
+            }],
+            target: parsed.domain,
+          };
+      }
+      return {
+        type: 'url',
+        content: [{
+          type: 'text',
+          content: capture[0],
+        }],
+        target: url,
+        title: undefined,
+        igap,
+      };
+    },
+  },
   mention: {
     order: SimpleMarkdown.defaultRules.text.order - 0.5,
     match: SimpleMarkdown.inlineRegex(
@@ -202,9 +239,11 @@ const rules = {
         style: styles.mention,
         key: state.key,
         onPress: () => {
-          const clientResolveUsername = new ClientResolveUsername();
-          clientResolveUsername.setUsername(node.target);
-          Api.invoke(CLIENT_RESOLVE_USERNAME, clientResolveUsername);
+          if (node.target) {
+            const clientResolveUsername = new ClientResolveUsername();
+            clientResolveUsername.setUsername(node.target);
+            Api.invoke(CLIENT_RESOLVE_USERNAME, clientResolveUsername);
+          }
         },
       }, output(node.content, state));
     },
@@ -256,7 +295,7 @@ const rules = {
   },
   text: {
     match: SimpleMarkdown.inlineRegex(
-      /^[\s\S]+?(?=[*[_~@#]|(?:(?:https?|ftp):\/\/|mailto:)|$)/i
+      /^[\s\S]+?(?=[*[_~@#]|(?:(?:https?|ftp|igap):\/\/|mailto:)|$)/i
     ),
     react: (node, output, state) => {
       return createElement(Text, {

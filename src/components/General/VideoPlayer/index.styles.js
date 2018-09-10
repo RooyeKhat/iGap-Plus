@@ -1,10 +1,12 @@
 import {uniqueId} from 'lodash';
-import {blackTransparent, gray800} from '../../../themes/default/index';
+import {appTheme} from '../../../themes/default/index';
+import {I18nManager} from 'react-native';
 
 const id = uniqueId();
 
 export default [
-  id, [
+  id,
+  () => [
     {
       query: {},
       style: {
@@ -23,15 +25,16 @@ export default [
           right: 0,
           left: 0,
           bottom: 0,
-          backgroundColor: blackTransparent,
+          backgroundColor: 'rgba(0,0,0,0.4)',
         },
         row: {
-          flexDirection: 'row',
+          flexDirection: I18nManager.isRTL ? 'row-reverse' : 'row',
         },
         play: {
           padding: 10,
-          borderRightWidth: 1,
-          borderColor: gray800,
+          borderRightWidth: I18nManager.isRTL ? 0 : 1,
+          borderLeftWidth: I18nManager.isRTL ? 1 : 0,
+          borderColor: appTheme.border,
 
         },
         close: {

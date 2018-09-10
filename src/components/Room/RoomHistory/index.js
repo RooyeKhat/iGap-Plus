@@ -1,20 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Text, View} from 'react-native';
+import {View} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import {DataProvider, LayoutProvider, RecyclerListView} from 'recyclerlistview';
-import {Confirm, Toolbar, PopupMenu} from '../../BaseUI/index';
-import styles from './index.styles';
-import SendBox from './SendBox';
+import {Confirm, Toolbar} from '../../BaseUI/index';
+import styleSheet from './index.styles';
+import SendBox from '../../../containers/Unit/SendBox';
 import RoomMessage from '../../../containers/Unit/RoomMessage';
 import JoinBox from './JoinBox';
 import ActionSheet from '../../BaseUI/ActionSheet/index';
 import i18n from '../../../i18n/en';
-import ForwardList from '../../../containers/Unit/ForwardList';
 import {Proto} from '../../../modules/Proto/index';
 import RoomActions from '../../../containers/Unit/RoomActions';
 import {APP_MODAL_ID_SECONDARY} from '../../../constants/app';
-import {textTitleStyle} from '../../../themes/default/index';
+import AvatarBox from '../../../containers/Unit/AvatarBox';
+
 import {
   BOX_TYPE_CHANNEL,
   BOX_TYPE_CHAT,
@@ -24,18 +24,25 @@ import {
   getSecondaryWidth,
   outerDimension,
 } from '../../../modules/DimensionCalculator/index';
-import {getAuthorHash} from '../../../utils/app';
+import {getAuthorHash, getRoomMessageType} from '../../../utils/app';
 import ScrollDown from './ScrollDown';
 import ReturnToCall from '../../Call/ReturnToCall';
+import {MemoizeResponsiveStyleSheet} from '../../../modules/Responsive';
+import RoomHistoryToolbar from './RoomHistoryToolbar';
 
 class RoomHistoryComponent extends React.PureComponent {
+
+  getStyles = () => {
+    return MemoizeResponsiveStyleSheet(styleSheet);
+  };
+
 
   _dataProvider = new DataProvider((r1, r2) => {
     return r1 !== r2 || this.prevSelectedList[r1] !== this.props.selectedList[r1];
   });
 
   getDataProvider = (messageList) => {
-    return this._dataProvider.cloneWithRows(messageList || []);
+    return this._dataProvider.cloneWithRows(messageList);
   };
 
   constructor(args) {
@@ -71,7 +78,7 @@ class RoomHistoryComponent extends React.PureComponent {
   }
 
   layoutProviderType = (index) => {
-    const {getRoomMessageType, messageList} = this.props;
+    const {messageList} = this.props;
     return getRoomMessageType(messageList[index]);
   };
 
@@ -86,6 +93,7 @@ class RoomHistoryComponent extends React.PureComponent {
 
   renderItem = (type, item) => {
     const {onMessagePress, onMessageLongPress, selectedList, roomType, roomId} = this.props;
+    const styles = this.getStyles();
     return (<View style={styles.messageWrap}>
       <RoomMessage
         roomId={roomId}
@@ -114,15 +122,37 @@ class RoomHistoryComponent extends React.PureComponent {
   };
 
   render() {
-    const {intl, Form, roomId, roomType, readOnly, isParticipant, isPublic, roomMute, joinBoxToggle, selectedCount, actionSheetControl, forwardModalControl, conformControl} = this.props;
+    const {
+      intl, verified, roomTitle, clientUpdating, goRoomInfoBtn, onRoomHistoryMorePress, goBack, stopAvatarDownload, startAvatarDownload, selectedBackGround,
+      controlSendBox, roomId, roomType, readOnly, isParticipant, isPublic, roomMute, joinBoxToggle, selectedCount, actionSheetControl, conformControl, messageList,
+    } = this.props;
+    const styles = this.getStyles();
     const {dataProvider} = this.state;
     return (
       <View style={styles.container}>
+        <View style={styles.backPic}>
+          {selectedBackGround && <AvatarBox
+            style={styles.avatarBack}
+            image={selectedBackGround}
+            startAvatarDownload={startAvatarDownload}
+            stopAvatarDownload={stopAvatarDownload}
+          />}
+        </View>
+
         <View style={styles.mainWrap}>
-          {!selectedCount ? this.renderBaseToolbar() : this.renderMessagePropToolbar()}
+          {!selectedCount ?
+            (<RoomHistoryToolbar
+              verified={verified}
+              roomTitle={roomTitle}
+              clientUpdating={clientUpdating}
+              goBack={goBack}
+              goRoomInfoBtn={goRoomInfoBtn}
+              onRoomHistoryMorePress={onRoomHistoryMorePress}
+            />)
+            : this.renderMessagePropToolbar()}
           <ReturnToCall/>
           <View style={styles.messageListWrap}>
-            <RecyclerListView
+            {!!messageList.length && (<RecyclerListView
               ref={this.flatListRef}
               canChangeSize={true}
               renderAheadOffset={640}
@@ -130,17 +160,15 @@ class RoomHistoryComponent extends React.PureComponent {
               dataProvider={dataProvider}
               rowRenderer={this.renderItem}
               onScroll={this.onScroll}
-              forceNonDeterministicRendering={true}/>
+              forceNonDeterministicRendering={true}/>)}
           </View>
 
           <ScrollDown
             scrollToEnd={this.scrollToEnd}
-            ref={(ref) => {
-              this.actionRef = ref;
-            }}/>
+            ref={this.scrollDownRef}/>
           <View style={styles.bottomWrap}>
             <RoomActions roomId={roomId} roomType={roomType}/>
-            {!readOnly ? (<SendBox Form={Form}/>) : (
+            {!readOnly ? (<SendBox control={controlSendBox} roomId={roomId}/>) : (
               <JoinBox joinBoxToggle={joinBoxToggle} isPublic={isPublic} roomMute={roomMute}
                 isParticipant={isParticipant}/>)}
           </View>
@@ -150,31 +178,22 @@ class RoomHistoryComponent extends React.PureComponent {
             title={intl.formatMessage(i18n.roomHistoryActionTitle)}
             ref={actionSheetControl}/>
           <Confirm control={conformControl} type={APP_MODAL_ID_SECONDARY}/>
-          <ForwardList ref={forwardModalControl}/>
 
         </View>
       </View>
     );
   }
 
-  renderBaseToolbar() {
-    const {intl, roomTitle, clientUpdating, goRoomInfoBtn, goBack, onRoomHistoryMorePress} = this.props;
-    return (<Toolbar
-      leftElement="arrow-back"
-      onLeftElementPress={goBack}
-      centerElement={<Text numberOfLines={1} style={textTitleStyle}>
-        {clientUpdating ? intl.formatMessage(i18n.clientUpdating) : roomTitle}</Text>}
-      rightElement={(<PopupMenu actionList={[intl.formatMessage(i18n.roomHistoryActionReport)]} type={APP_MODAL_ID_SECONDARY} onPress={onRoomHistoryMorePress}/>)}
-      onPress={goRoomInfoBtn}
-    />);
-  }
+  scrollDownRef = (ref) => {
+    this.actionRef = ref;
+  };
 
   renderMessagePropToolbar() {
     const {selectedCount, cancelSelected, selectedMessageAction, toolbarActions} = this.props;
     return (<Toolbar
       leftElement="close"
       onLeftElementPress={cancelSelected}
-      centerElement={<Text style={textTitleStyle}>{selectedCount.toString()}</Text>}
+      centerElement={selectedCount.toString()}
       rightElement={toolbarActions}
       onRightElementPress={selectedMessageAction}
     />);
@@ -183,7 +202,7 @@ class RoomHistoryComponent extends React.PureComponent {
 
 RoomHistoryComponent.propTypes = {
   intl: intlShape.isRequired,
-  Form: PropTypes.object.isRequired,
+  controlSendBox: PropTypes.func.isRequired,
   roomId: PropTypes.string.isRequired,
   roomType: PropTypes.oneOf([
     Proto.Room.Type.CHAT,
@@ -199,10 +218,10 @@ RoomHistoryComponent.propTypes = {
   joinBoxToggle: PropTypes.func.isRequired,
   messageList: PropTypes.arrayOf(PropTypes.string),
   selectedList: PropTypes.object.isRequired,
-  getRoomMessageType: PropTypes.func.isRequired,
   selectedCount: PropTypes.number,
   cancelSelected: PropTypes.func.isRequired,
   goRoomInfoBtn: PropTypes.func.isRequired,
+  onRoomHistoryMorePress: PropTypes.func.isRequired,
   onMessagePress: PropTypes.func.isRequired,
   onMessageLongPress: PropTypes.func.isRequired,
   selectedMessageAction: PropTypes.func.isRequired,
@@ -211,7 +230,10 @@ RoomHistoryComponent.propTypes = {
   actionSheetControl: PropTypes.func.isRequired,
   toolbarActions: PropTypes.arrayOf(PropTypes.string).isRequired,
   onScroll: PropTypes.func.isRequired,
-  forwardModalControl: PropTypes.func.isRequired,
   goBack: PropTypes.func.isRequired,
+  verified: PropTypes.bool,
+  startAvatarDownload: PropTypes.func.isRequired,
+  stopAvatarDownload: PropTypes.func.isRequired,
+  selectedBackGround: PropTypes.object,
 };
 export default injectIntl(RoomHistoryComponent);

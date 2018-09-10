@@ -62,7 +62,11 @@ export default async function(uid, token, selector, size, cacheId, originalFileN
     while (fileInfo.fileSize.lessThan(size)) {
       const storeFile = store.getState().fileManager.download[cacheId];
       if (storeFile) {
-        if (storeFile.status === FILE_MANAGER_DOWNLOAD_STATUS.MANUALLY_PAUSED) {
+        if (
+          storeFile.status === FILE_MANAGER_DOWNLOAD_STATUS.MANUALLY_PAUSED
+          &&
+          !(downloadingPromise.has(cacheId))
+        ) {
           throw new ClientError('Manually paused');
         } else if (
             storeFile.status === FILE_MANAGER_DOWNLOAD_STATUS.AUTO_PAUSED
@@ -102,6 +106,9 @@ export default async function(uid, token, selector, size, cacheId, originalFileN
       }
     }
     store.dispatch(fileManagerDownloadCompleted(cacheId, fileInfo.fileUri));
+    return {
+      uri: fileInfo.fileUri,
+    };
   } catch (e) {
     if (!(e instanceof ClientError)) {
       store.dispatch(fileManagerDownloadAutoPaused(cacheId));

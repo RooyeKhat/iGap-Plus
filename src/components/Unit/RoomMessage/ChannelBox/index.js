@@ -1,19 +1,24 @@
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Text, View} from 'react-native';
-import {black600, red} from '../../../../themes/default/index';
+import {appTheme, red} from '../../../../themes/default/index';
 import {connect} from 'react-redux';
 import {getRoom} from '../../../../selector/entities/room';
 import MessageBox from '../MessageBox/index';
 import {Button, Icon, IconToggle, MCIcon} from '../../../BaseUI/index';
 import AddonTime from '../MessageBox/AddonTime';
 import Avatar from '../../../../containers/Unit/Avatar';
-import styles from './index.styles';
+import styleSheet from './index.styles';
 import {BOX_TYPE_CHANNEL} from '../../../../modules/DimensionCalculator/index';
 import RichTextView from '../../../../modules/RichTextView/index';
 import {Proto} from '../../../../modules/Proto/index';
+import {MemoizeResponsiveStyleSheet} from '../../../../modules/Responsive';
 
-class ChannelBox extends Component {
+class ChannelBox extends PureComponent {
+
+  getStyles = () => {
+    return MemoizeResponsiveStyleSheet(styleSheet);
+  };
 
   state = {
     saveMessageState: 'default',
@@ -44,6 +49,7 @@ class ChannelBox extends Component {
   };
 
   render() {
+    const styles = this.getStyles();
     const {saveMessageState} = this.state;
     const {room, message, onMessagePress, onMessageLongPress, showText, isForwarded, onShareMessagePress, onReactionPress} = this.props;
 
@@ -54,15 +60,15 @@ class ChannelBox extends Component {
           <View style={styles.avatarWrap}>
             <Avatar roomId={message.roomId} size={45}/>
           </View>
-          {room && <Text style={styles.textTitle}>{room.title}</Text>}
-          <MCIcon color={black600} name="share-variant" size={20} onPress={onShareMessagePress}/>
+          {room && <Text style={styles.textTitle} numberOfLines={1}>{room.title}</Text>}
+          <MCIcon color={appTheme.icon} name="share-variant" size={20} onPress={onShareMessagePress}/>
 
           {saveMessageState === 'default' &&
-          (<IconToggle color={black600} name="cloud-upload" size={25} onPress={this.saveMessagePress}
+          (<IconToggle color={appTheme.icon} name="cloud-upload" size={25} onPress={this.saveMessagePress}
             style={styles.bookmark}/>)}
 
           {saveMessageState === 'loading' &&
-          (<IconToggle color={black600} name="hourglass-empty" size={25} style={styles.bookmark}/>)}
+          (<IconToggle color={appTheme.icon} name="hourglass-empty" size={25} style={styles.bookmark}/>)}
 
           {saveMessageState === 'failed' &&
           (<IconToggle color={red} name="remove-circle" size={25} onPress={this.saveMessagePress}
@@ -83,14 +89,17 @@ class ChannelBox extends Component {
 
         <View style={styles.layoutChannelInfo}>
           <View style={styles.channelReactionWrap}>
-            <Button style={styles.reactionBtn} text={message.channelViewsLabel || '0'} icon="visibility"/>
-            <Button style={styles.reactionBtn} text={message.channelThumbsUpLabel || '0'} icon="thumb-up"
+            <Button style={styles.reactionBtn} text={message.channelViewsLabel || '0'}
+              icon={<Icon name="visibility" size={25} color={appTheme.icon}/>}/>
+            <Button style={styles.reactionBtn} text={message.channelThumbsUpLabel || '0'}
+              icon={<Icon name="thumb-up" size={22} color={appTheme.icon}/>}
               onPress={this.reactionUp}/>
-            <Button style={styles.reactionBtn} text={message.channelThumbsDownLabel || '0'} icon="thumb-down"
+            <Button style={styles.reactionBtn} text={message.channelThumbsDownLabel || '0'}
+              icon={<Icon name="thumb-down" size={22} color={appTheme.icon}/>}
               onPress={this.reactionDown}/>
           </View>
           <View style={styles.chanelInfoWrap}>
-            {message.edited && (<Icon name="mode-edit" size={15}/>)}
+            {message.edited && (<Icon name="mode-edit" size={15} color={appTheme.icon}/>)}
             <AddonTime createTime={message.createTime}/>
             <Text numberOfLines={1} style={styles.textSignature}>{message.channelSignature}</Text>
           </View>

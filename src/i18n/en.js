@@ -187,6 +187,11 @@ export default {
     defaultMessage: 'Privacy and Policy',
     description: 'UserRegister Page',
   },
+  registerTermsOfService: {
+    id: 'register.TermsOfService',
+    defaultMessage: 'Terms of Service',
+    description: 'UserRegister Page',
+  },
   registerLoginDivider: {
     id: 'UserRegister.loginDivider',
     defaultMessage: 'OR',
@@ -207,6 +212,11 @@ export default {
     defaultMessage: 'Read this QrCode with your iGap app to login .',
     description: 'QrCode Login Page',
   },
+  QrCodeLoginHelpJoin: {
+    id: 'QrCodeLogin.helpJoin',
+    defaultMessage: 'Read this QrCode with your iGap app to join room .',
+    description: 'QrCode Login Page',
+  },
   errorRequired: {
     id: 'Error.required',
     defaultMessage: 'The {field} field is required',
@@ -224,7 +234,7 @@ export default {
   },
   errorNumberBigMax: {
     id: 'Error.numberBigMax',
-    defaultMessage: 'The {field} is too Big, max {max} char.',
+    defaultMessage: 'The {field} is too big, max {max} char.',
     description: 'error',
   },
   errorTypeString: {
@@ -239,7 +249,7 @@ export default {
   },
   errorStringLengthMax: {
     id: 'Error.stringLengthMax',
-    defaultMessage: 'The {field} is too Big, max {max} char.',
+    defaultMessage: 'The {field} is too big, max {max} char.',
     description: 'error',
   },
   errorRegexInvalid: {
@@ -247,13 +257,6 @@ export default {
     defaultMessage: 'The {field} Invalid.',
     description: 'error',
   },
-
-  privacyPolicyTitle: {
-    id: 'privacyPolicy.title',
-    defaultMessage: 'Privacy and Policy',
-    description: 'Privacy Policy Page',
-  },
-
   verifySmsPermissionTitle: {
     id: 'UserVerify.receiveSms',
     defaultMessage: 'Receive Sms',
@@ -285,7 +288,7 @@ export default {
     description: 'UserVerify Page',
   },
   verifyResendCodeTimer: {
-    id: 'UserVerify.codePlaceholder',
+    id: 'UserVerify.resendCodeTimer',
     defaultMessage: 'resend code in {time} Second.',
     description: 'UserVerify Page',
   },
@@ -389,7 +392,7 @@ export default {
     description: 'two-step setting',
   },
   twoStepSetPasswordVerifyEmailTitle: {
-    id: 'twoStepVerifyEmail.title',
+    id: 'twoStepSetPasswordVerifyEmail.title',
     defaultMessage: 'Verify Email',
     description: 'two-step setting',
   },
@@ -493,8 +496,8 @@ export default {
     description: 'two-step setting',
   },
   twoStepSettingSettingUnsetPassowrdDescription: {
-    id: 'twoStepSetting.unsetPassowrdTitle',
-    defaultMessage: 'Are you sure you want to delete Two-step Verification ?',
+    id: 'twoStepSetting.unsetPassowrdDescription',
+    defaultMessage: 'Are you sure you want to delete Two-step verification ?',
     description: 'two-step setting',
   },
 
@@ -567,7 +570,7 @@ export default {
   },
 
   twoStepRecoveryByEmailTitle: {
-    id: 'twoStepRecoveryByEmail.infoContent',
+    id: 'twoStepRecoveryByEmail.title',
     defaultMessage: 'Recovery By Email',
     description: 'twoStepVerification Page',
   },
@@ -788,6 +791,11 @@ export default {
     defaultMessage: 'Username',
     description: 'RoomInfo screen',
   },
+  roomInfoPhone: {
+    id: 'roomInfo.phone',
+    defaultMessage: 'Phone',
+    description: 'RoomInfo screen',
+  },
   roomInfoMuteNotifications: {
     id: 'roomInfo.mute.notifications',
     defaultMessage: 'Mute Notifications',
@@ -853,9 +861,24 @@ export default {
     defaultMessage: 'New Create Invoice',
     description: 'new Screen',
   },
+  newMyCloud: {
+    id: 'new.myCloud',
+    defaultMessage: 'My Cloud',
+    description: 'new Screen',
+  },
   newContacts: {
     id: 'new.contacts',
     defaultMessage: 'Contacts',
+    description: 'new Screen',
+  },
+  newSearch: {
+    id: 'new.search',
+    defaultMessage: 'Search',
+    description: 'new Screen',
+  },
+  newGlobal: {
+    id: 'new.global',
+    defaultMessage: 'Global',
     description: 'new Screen',
   },
   newAddContacts: {
@@ -1146,7 +1169,7 @@ export default {
   },
   roomInfoDeleteRoomConfirmDescription: {
     id: 'roomInfo.deleteRoomConfirmDescription',
-    defaultMessage: 'Are you sure you want to Delete {roomTitle}?',
+    defaultMessage: 'Are you sure you want to delete {roomTitle}?',
     description: 'room info screen',
   },
   roomInfoClearHistoryConfirmTitle: {
@@ -1156,7 +1179,7 @@ export default {
   },
   roomInfoClearHistoryConfirmDescription: {
     id: 'roomInfo.clearHistoryConfirmDescription',
-    defaultMessage: 'Are you sure you want to Clear {roomTitle} history?',
+    defaultMessage: 'Are you sure you want to clear {roomTitle} history?',
     description: 'room info screen',
   },
   roomInfoLeaveRomConfirmTitle: {
@@ -1166,7 +1189,7 @@ export default {
   },
   roomInfoLeaveRomConfirmDescription: {
     id: 'roomInfo.leaveRoomConfirmDescription',
-    defaultMessage: 'Are you sure you want to Leave From {roomTitle}?',
+    defaultMessage: 'Are you sure you want to leave from {roomTitle}?',
     description: 'room info screen',
   },
   roomInfoShareContact: {
@@ -1186,7 +1209,7 @@ export default {
   },
   roomInfoUnBlockContact: {
     id: 'roomInfo.unBlockContact',
-    defaultMessage: 'UnBlock Contact',
+    defaultMessage: 'Unblock Contact',
     description: 'room info screen',
   },
   roomInfoDeleteContact: {
@@ -1211,7 +1234,7 @@ export default {
   },
   roomInfoBlockContactConfirmDescription: {
     id: 'roomInfo.blockContactConfirmDescription',
-    defaultMessage: 'Are you sure you want to Block this contact?',
+    defaultMessage: 'Are you sure you want to block this contact?',
     description: 'room info screen',
   },
   roomMemberListToolbarTitle: {
@@ -1257,6 +1280,11 @@ export default {
   roomInviteLinkRevokeLinkBtn: {
     id: 'roomInviteLink.revokeLinkBtn',
     defaultMessage: 'Revoke Link',
+    description: 'Room Revoke Invite Link Screen',
+  },
+  roomInviteLinkCopyClipboardBtn: {
+    id: 'roomInviteLink.copyClipboardBtn',
+    defaultMessage: 'Copy Link',
     description: 'Room Revoke Invite Link Screen',
   },
   roomHistoryUnreadMessageLabel: {
@@ -1351,7 +1379,7 @@ export default {
   },
   roomHistoryDeleteMessagesDescription: {
     id: 'roomHistory.deleteMessagesDescription',
-    defaultMessage: 'Are You Sure you Want to Delete {count} message from {roomTitle} ?',
+    defaultMessage: 'Are you sure you want to delete {count} message from {roomTitle} ?',
     description: 'roomHistory screen',
   },
   roomHistoryJoinBoxJoin: {
@@ -1420,7 +1448,7 @@ export default {
     description: 'roomHistory screen',
   },
   roomHistoryActionChat: {
-    id: 'roomHistory.action',
+    id: 'roomHistory.actionChat',
     defaultMessage: 'is {action, select, 1{Typing} 2{Sending Image} 3{Capturing Image} 4{Sending Video} 5{Capturing Video} 6{Sending Audio} 7{Recording Voice} 8{Sending Voice} 9{Sending Document} 10{Sending Gif} 11{Sending File} 12{Sending Location} 13{Choosing Contact} 14{Painting}}...',
     description: 'roomHistory screen',
   },
@@ -1434,9 +1462,19 @@ export default {
     defaultMessage: 'Report',
     description: 'roomHistory screen',
   },
+  roomHistoryQrLink: {
+    id: 'roomHistory.qrLink',
+    defaultMessage: 'QR code',
+    description: 'roomHistory screen',
+  },
   roomHistoryPickContactTitle: {
     id: 'roomHistory.pickContactTitle',
     defaultMessage: 'Select Contact',
+    description: 'roomHistory screen',
+  },
+  roomHistoryDeleteMessageForBoth: {
+    id: 'roomHistory.deleteMessageForBoth',
+    defaultMessage: 'Delete Message For {userTitle}?',
     description: 'roomHistory screen',
   },
   roomMessageReplyTo: {
@@ -1571,12 +1609,12 @@ export default {
   },
   settingLogOutSubTitle: {
     id: 'setting.logOuSubTitlet',
-    defaultMessage: 'Do you want to LogOut this device ?',
+    defaultMessage: 'Do you want to logout this device ?',
     description: 'setting screen',
   },
   settingDeleteAccountSubTitle: {
     id: 'setting.deleteAccountSubTitle',
-    defaultMessage: 'Do you want to Delete your account ?',
+    defaultMessage: 'Do you want to delete your account ?',
     description: 'setting screen',
   },
   settingNotificationAndSound: {
@@ -1587,6 +1625,21 @@ export default {
   settingLanguage: {
     id: 'setting.language',
     defaultMessage: 'Language',
+    description: 'setting screen',
+  },
+  settingThemes: {
+    id: 'setting.themes',
+    defaultMessage: 'Themes',
+    description: 'setting screen',
+  },
+  settingThemesPickerTitle: {
+    id: 'setting.themesPickerTitle',
+    defaultMessage: 'Theme',
+    description: 'setting screen',
+  },
+  settingThemesPickerPlaceHolder: {
+    id: 'setting.themesPickerPlaceHolder',
+    defaultMessage: 'Change Theme',
     description: 'setting screen',
   },
   settingTwoStepVerification: {
@@ -1601,7 +1654,12 @@ export default {
   },
   settingLoginWithQrCode: {
     id: 'setting.LoginWithQrCode',
-    defaultMessage: 'Login with QR code',
+    defaultMessage: 'Scan QR code',
+    description: 'setting screen',
+  },
+  settingChatBackground: {
+    id: 'setting.chatBackground',
+    defaultMessage: 'Chat Background',
     description: 'setting screen',
   },
   qrCodeLoggedInDevice: {
@@ -1623,17 +1681,17 @@ export default {
   },
   privacyWhoCanSeeMyAvatar: {
     id: 'privacy.whoCanSeeMyAvatar',
-    defaultMessage: 'Who can see my Avatar',
+    defaultMessage: 'Who can see my avatar',
     description: 'Privacy screen',
   },
   privacyWhoCanInviteMeToChannels: {
     id: 'privacy.whoCanInviteMeToChannels',
-    defaultMessage: 'Who can invite me to Channels',
+    defaultMessage: 'Who can invite me to channels',
     description: 'Privacy screen',
   },
   privacyWhoCanInviteMeToGroups: {
     id: 'privacy.whoCanInviteMeToGroups',
-    defaultMessage: 'Who can invite me to Groups',
+    defaultMessage: 'Who can invite me to groups',
     description: 'Privacy screen',
   },
   privacyWhoCanCallMe: {
@@ -1708,7 +1766,7 @@ export default {
   },
   activeSessionTerminateAllOtherActiveSession: {
     id: 'activeSession.terminateAllOtherActiveSession',
-    defaultMessage: 'Terminate All Other Active Session',
+    defaultMessage: 'Terminate all other active session',
     description: 'Active Session page',
   },
   activeSessionTerminate: {
@@ -1892,6 +1950,31 @@ export default {
     defaultMessage: '{type, select, 1{Image Message} 3{Video Message} 5{Audio Message} 7{Voice Message} 8{Gif} 9{Attachment} 11{Location} 12{Log Message} 13{Contact} other{None Message}}',
     description: 'Room List Screen',
   },
+  roomListFilterAll: {
+    id: 'roomList.filterAll',
+    defaultMessage: 'All',
+    description: 'Room List Screen',
+  },
+  roomListFilterChat: {
+    id: 'roomList.filterChat',
+    defaultMessage: 'Chat',
+    description: 'Room List Screen',
+  },
+  roomListFilterGroup: {
+    id: 'roomList.filterGroup',
+    defaultMessage: 'Group',
+    description: 'Room List Screen',
+  },
+  roomListFilterChannel: {
+    id: 'roomList.filterChannel',
+    defaultMessage: 'Chanel',
+    description: 'Room List Screen',
+  },
+  roomListFilterCall: {
+    id: 'roomList.filterCall',
+    defaultMessage: 'Call',
+    description: 'Room List Screen',
+  },
   nearbyScreenListTitle: {
     id: 'nearbyScreen.listTitle',
     defaultMessage: 'Nearby List',
@@ -1904,7 +1987,7 @@ export default {
   },
   nearbyScreenRegisterNoties: {
     id: 'nearbyScreen.RegisterNoties',
-    defaultMessage: 'Notice! Activating Map Status will result in making your location visible to others. Please be sure about it before turning on.',
+    defaultMessage: 'Notice! activating map status will result in making your location visible to others. Please be sure about it before turning on.',
     description: 'Nearby Screen',
   },
   nearbyScreenLocationPermissionTitle: {
@@ -1951,5 +2034,25 @@ export default {
     id: 'roomStatusLabel.status',
     defaultMessage: '{status, select,1{Last Month} 2{Last Week} 3{Online} 5{Recently} 6{Support} 7{Service Notification} other{Long time ago}}',
     description: 'roomStatusLabelMember',
+  },
+  roomPickerTitle: {
+    id: 'roomPicker.title',
+    defaultMessage: 'Select a Chat',
+    description: 'RoomPicker Screen',
+  },
+  sendBoxDialogCameraTitle: {
+    id: 'sendBox.dialogCameraTitle',
+    defaultMessage: 'Select camera action',
+    description: 'sendBox Screen',
+  },
+  sendBoxCaptureImage: {
+    id: 'sendBox.captureImage',
+    defaultMessage: 'Capture image',
+    description: 'sendBox Screen',
+  },
+  sendBoxCaptureVideo: {
+    id: 'sendBox.captureVideo',
+    defaultMessage: 'Capture video',
+    description: 'sendBox Screen',
   },
 };

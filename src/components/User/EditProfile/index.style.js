@@ -1,16 +1,18 @@
 import {uniqueId} from 'lodash';
-import {black200, gray800, primary} from '../../../themes/default/index';
+import {appTheme} from '../../../themes/default/index';
+import {I18nManager} from 'react-native';
 
 const id = uniqueId();
 
 export default [
-  id, [
+  id,
+  () => [
     {
       query: {},
       style: {
         root: {
           flex: 1,
-          backgroundColor: '#fcfcfc',
+          backgroundColor: appTheme.pageBackground,
         },
         scroll: {
           flex: 1,
@@ -25,6 +27,7 @@ export default [
             borderRadius: 0,
             borderWidth: 0,
             borderBottomWidth: 1,
+            textAlign: I18nManager.isRTL ? 'right' : 'left',
           },
         },
         avatar: {
@@ -39,15 +42,16 @@ export default [
           padding: 5,
           margin: 5,
           fontSize: 18,
-          color: primary,
+          color: appTheme.primary,
           alignSelf: 'center',
         },
         text: {
           marginTop: 12,
           fontSize: 14,
-          color: gray800,
+          color: appTheme.secondaryText,
           paddingLeft: 15,
           paddingRight: 15,
+          textAlign: 'left',
         },
         textInput: {
           fontSize: 18,
@@ -55,7 +59,7 @@ export default [
           marginBottom: -6,
           backgroundColor: null,
           borderWidth: 0,
-          color: black200,
+          color: appTheme.titleText,
         },
         dividerLine: {
           borderTopWidth: 1,
@@ -63,10 +67,11 @@ export default [
         },
         textPhone: {
           fontSize: 18,
-          color: gray800,
+          color: appTheme.secondaryText,
           marginBottom: 10,
           paddingLeft: 15,
           paddingRight: 15,
+          textAlign: 'left',
         },
         pikerGender: {
           marginTop: -10,
@@ -85,6 +90,11 @@ export default [
           flexDirection: 'row',
           justifyContent: 'center',
           alignItems: 'center',
+        },
+        PickerField: {
+          picker: {
+            color: appTheme.primaryText,
+          },
         },
       },
     },

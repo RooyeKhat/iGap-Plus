@@ -1,8 +1,18 @@
+import React from 'react';
 import MetaData from '../models/MetaData';
 import store from '../configureStore';
 import RNIGFileSystem from 'react-native-file-system';
 import Share from '../modules/Share/index';
-import {ChatGetRoom, SignalingGetConfiguration, UserContactsImport, UserLogin, UserSessionLogout, UserUpdateStatus,
+import i18n from '../i18n';
+import {FormattedMessage} from 'react-intl';
+import {
+  ChatGetRoom,
+  ClientRegisterDevice,
+  SignalingGetConfiguration,
+  UserContactsImport,
+  UserLogin,
+  UserSessionLogout,
+  UserUpdateStatus,
 } from '../modules/Proto/index';
 import {Platform} from 'react-native';
 import {Proto} from '../modules/Proto';
@@ -10,6 +20,7 @@ import {APP_BUILD_VERSION, APP_ID, APP_NAME, APP_VERSION, GOOGLE_API_KEY} from '
 import {
   CHAT_GET_ROOM,
   CLIENT_CONDITION,
+  CLIENT_REGISTER_DEVICE,
   SIGNALING_GET_CONFIGURATION,
   USER_CONTACTS_IMPORT,
   USER_LOGIN,
@@ -43,6 +54,13 @@ import Client from '../modules/Api/Client';
 import {clientStatusChanged} from '../actions/api';
 import {clientStatusUpdating} from '../actions/updating';
 import {serverRoomsState} from '../modules/Messenger/Rooms/index';
+import {waitForRoom} from '../modules/Entities/Rooms/index';
+import {notifyMessage} from '../modules/Notification/index';
+import {waitForUser} from '../modules/Entities/RegisteredUsers/index';
+import {fileManagerDownload} from '../actions/fileManager';
+import {FILE_MANAGER_DOWNLOAD_MANNER} from '../constants/fileManager';
+import {appEnable} from '../actions/app';
+import DeviceInfo from 'react-native-device-info';
 
 let _userId;
 let _userIdString;
@@ -51,6 +69,7 @@ let _authorHash;
 let _fakeMessageId = Long.ZERO;
 let _roomHistorySelectedMode = false;
 let _appState;
+let _chatDeleteMessageForBothPeriod = 2 * 3600;
 
 /**
  * @returns {Long}
@@ -136,14 +155,11 @@ export async function login(handlerPrecedence = HANDLER_PRECEDENCE.BEFORE) {
   userLogin.setAppId(APP_ID);
   userLogin.setAppBuildVersion(APP_BUILD_VERSION);
   userLogin.setAppVersion(APP_VERSION);
-
   userLogin.setPlatform(getPlatform());
-  userLogin.setPlatformVersion('0');
-
-  userLogin.setDevice(Proto.Device.UNKNOWN_DEVICE);
-  userLogin.setDeviceName('UNKNOWN_DEVICE');
+  userLogin.setPlatformVersion(DeviceInfo.getSystemVersion());
+  userLogin.setDevice(DeviceInfo.getDeviceName());
+  userLogin.setDeviceName(DeviceInfo.getBrand());
   userLogin.setLanguage(Proto.Language.FA_IR);
-  // TODO [Amerehie] - 8/30/2017 2:05 PM - setPlatform , setPlatformVersion ...
 
   const response = await Api.invoke(USER_LOGIN, userLogin, null, handlerPrecedence);
 
@@ -224,11 +240,53 @@ export function prepareRoomMessage(normalizedRoomMessage, roomId, checkState) {
 
   if (getFocusRoom() === roomId) {
     seenMessage(roomId, normalizedRoomMessage.id);
-  } else {
+  } else if (normalizedRoomMessage.status === Proto.RoomMessageStatus.SENT) {
     deliverMessage(roomId, normalizedRoomMessage.id);
+    prepareNotifyRoomMessage(normalizedRoomMessage);
   }
 
   setFakeMessageId(normalizedRoomMessage.longId);
+}
+
+/**
+ * @param roomMessage
+ * @returns {Promise.<void>}
+ */
+export async function prepareNotifyRoomMessage(roomMessage) {
+  const room = await waitForRoom(roomMessage.roomId);
+  const title = room.title;
+  let avatar = room.avatar;
+  let message = getMessageText(roomMessage);
+  if (!roomMessage || roomMessage.deleted) {
+    return;
+  }
+  if (room.roomMute === Proto.RoomMute.MUTE) {
+    return;
+  }
+  if (roomMessage.authorHash === getAuthorHash()) {
+    return;
+  }
+  if (room.type === Proto.Room.Type.GROUP && roomMessage.authorUser) {
+    const authorUser = await waitForUser(roomMessage.authorUser);
+    message = authorUser.displayName + ': ' + message;
+  }
+  if (avatar) {
+    const cacheId = avatar.getFile().getSmallThumbnail().getCacheId();
+    if (store.getState().fileManager.download[cacheId]) {
+      avatar = store.getState().fileManager.download[cacheId];
+    } else {
+      avatar = await store.dispatch(fileManagerDownload(
+        FILE_MANAGER_DOWNLOAD_MANNER.FORCE,
+        avatar.getFile().getToken(),
+        Proto.FileDownload.Selector.SMALL_THUMBNAIL,
+        avatar.getFile().getSmallThumbnail().getSize(),
+        avatar.getFile().getSmallThumbnail().getCacheId(),
+        avatar.getFile().getSmallThumbnail().getName()
+      ));
+    }
+    avatar = prependFileProtocol(avatar.uri);
+  }
+  notifyMessage(roomMessage.roomId, title, avatar, message, roomMessage.id);
 }
 
 /**
@@ -460,4 +518,96 @@ export async function loadPeerRoom(peerId) {
     } while (!room && ++tries < 3);
   }
   return room;
+}
+
+/**
+ * @returns {number}
+ */
+export function getChatDeleteMessageForBothPeriod() {
+  return _chatDeleteMessageForBothPeriod;
+}
+
+/**
+ * @param time
+ */
+export function setChatDeleteMessageForBothPeriod(time) {
+  _chatDeleteMessageForBothPeriod = time;
+}
+
+/**
+ * Client Register Device
+ * @param token
+ * @returns {Promise}
+ */
+export function registerDevice(token) {
+  const registerDevice = new ClientRegisterDevice();
+  registerDevice.setToken(token);
+  registerDevice.setType(Platform.select({
+    ios: Proto.ClientRegisterDevice.Type.IOS,
+    android: Proto.ClientRegisterDevice.Type.ANDROID,
+    default: Proto.ClientRegisterDevice.Type.GENERIC,
+  }));
+  return Api.invoke(CLIENT_REGISTER_DEVICE, registerDevice);
+}
+
+export function reloadApp() {
+  store.dispatch(appEnable(false));
+  store.dispatch(appEnable(true));
+}
+
+export function getMessageTitle(message) {
+  if (!message || message.deleted) {
+    return null;
+  }
+  if (message.message) {
+    return message.message;
+  }
+  if (message.forwardFrom) {
+    return getMessageTitle(message.forwardFrom);
+  }
+  return (<FormattedMessage {...i18n.roomListLastMessageTitle} values={{type: message.messageType}}/>);
+}
+
+export function getMessageText(message) {
+  if (!message || message.deleted) {
+    return null;
+  }
+  if (message.message) {
+    return message.message;
+  }
+  if (message.forwardFrom) {
+    return getMessageText(message.forwardFrom);
+  }
+  const types = {
+    [Proto.RoomMessageType.IMAGE]: 'sent a photo',
+    [Proto.RoomMessageType.VIDEO]: 'sent a video',
+    [Proto.RoomMessageType.AUDIO]: 'sent a audio',
+    [Proto.RoomMessageType.VOICE]: 'sent a voice message',
+    [Proto.RoomMessageType.GIF]: 'sent a gif',
+    [Proto.RoomMessageType.FILE]: 'sent a file',
+    [Proto.RoomMessageType.LOCATION]: 'sent a location',
+    [Proto.RoomMessageType.CONTACT]: 'sent a contact',
+  };
+  return types[message.messageType];
+}
+
+export function getRoomType(roomId) {
+  const room = store.getState().entities.rooms[roomId];
+  return room ? room.type : null;
+}
+
+export function getRoomMessageType(messageId) {
+  const roomMessage = store.getState().entities.roomMessages[messageId];
+
+  if (!roomMessage) {
+    //todo Error Report
+    console.warn('getRoomMessageType: Invalid MessageId', messageId);
+    return -1;
+  }
+
+  if (roomMessage.deleted) {
+    return -2;
+  }
+
+  return roomMessage.messageType;
 }

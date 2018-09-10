@@ -23,8 +23,8 @@ import {goRoomInfo} from '../../navigators/SecondaryNavigator';
 import {ActivityIndicator} from '../../components/BaseUI/';
 import {View} from 'react-native';
 import Permission, {PERMISSION_LOCATION} from '../../modules/Permission/index';
-import i18n from '../../i18n/en';
-import {loadPeerRoom} from "../../utils/app";
+import i18n from '../../i18n/index';
+import {loadPeerRoom} from '../../utils/app';
 
 class NearbyScreen extends Component {
 
@@ -63,9 +63,15 @@ class NearbyScreen extends Component {
     nearbyDist.setLon(myCoordinate.longitude);
     const nearbyResponse = await Api.invoke(GEO_GET_NEARBY_DISTANCE, nearbyDist);
     this.setState({
-      nearbyDistance: nearbyResponse.getResultList(),
+      nearbyDistance: nearbyResponse.getResultList().sort(this.compare),
     });
   };
+
+  compare(a, b) {
+    if (a.distance < b.distance) {return -1;}
+    if (a.distance > b.distance) {return 1;}
+    return 0;
+  }
 
   invokeNearbyCoordinate = async () => {
     const {myCoordinate} = this.state;

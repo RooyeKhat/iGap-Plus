@@ -1,11 +1,12 @@
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {findNodeHandle, NativeModules, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {IconToggle} from '../../BaseUI/index';
+import {appTheme} from '../../../themes/default/index';
 
 const UIManager = NativeModules.UIManager;
 
-class PopupMenu extends Component {
+class PopupMenu extends PureComponent {
 
   onMenuPressed = () => {
     const {onPress, actionList} = this.props;
@@ -26,7 +27,7 @@ class PopupMenu extends Component {
     const {button} = this.props;
     let element = null;
     if (typeof button === 'string') {
-      element = (<IconToggle onPress={this.onMenuPressed} name="more-vert"/>);
+      element = (<IconToggle onPress={this.onMenuPressed} name="more-vert" color={appTheme.toolbarIcon}/>);
     } else {
       element = (<TouchableOpacity onPress={this.onMenuPressed} activeOpacity={0.9}>{button}</TouchableOpacity>);
     }

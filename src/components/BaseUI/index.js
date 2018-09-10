@@ -34,6 +34,8 @@ import {IRANSans} from '../../constants/fonts/index';
 import StatusBar from './StatusBar';
 import Toolbar from './Toolbar';
 import KeyboardAvoidingView from './KeyboardAvoidingView';
+import Checkbox from './Checkbox';
+import SnackBar from './SnackBar';
 
 const defaultTextStyle = StyleSheet.create({
   defaultStyle: {
@@ -52,6 +54,7 @@ Text.prototype.render = function(...args) {
 export {
   AppModal,
   Switch,
+  Checkbox,
   ActivityIndicator,
   Button,
   Toolbar,
@@ -84,4 +87,5 @@ export {
   ActionButton,
   KeyboardAvoidingView,
   RippleFeedback,
+  SnackBar,
 };

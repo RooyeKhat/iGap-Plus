@@ -1,10 +1,17 @@
 package iGap.Plus;
 
 import android.app.Application;
+import android.content.Context;
+import android.support.multidex.MultiDex;
 
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.ndk.CrashlyticsNdk;
 import com.facebook.react.ReactApplication;
+import com.learnium.RNDeviceInfo.RNDeviceInfo;
+import com.avishayil.rnrestart.ReactNativeRestartPackage;
+import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage;
+import io.invertase.firebase.RNFirebasePackage;
+import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
 import plus.igap.camera.RNIGCameraPackage;
 import plus.igap.videocompress.RNVideoCompressPackage;
 import com.smixx.fabric.FabricPackage;
@@ -46,6 +53,11 @@ public class MainApplication extends Application implements ReactApplication , S
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new RNDeviceInfo(),
+            new ReactNativeRestartPackage(),
+            new RNFirebasePackage(),
+            new RNFirebaseMessagingPackage(),
+            new RNFirebaseNotificationsPackage(),
             new RNIGCameraPackage(),
             new RNVideoCompressPackage(),
             new FabricPackage(),
@@ -90,4 +102,10 @@ public class MainApplication extends Application implements ReactApplication , S
        public String getFileProviderAuthority() {
               return "iGap.Plus.provider";
        }
+
+  @Override
+  protected void attachBaseContext(Context base) {
+    super.attachBaseContext(base);
+    MultiDex.install(this);
+  }
 }

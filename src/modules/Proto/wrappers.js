@@ -732,6 +732,7 @@ proto.proto.RoomMessageLog.Type = proto.proto.RoomMessageLog.prototype.Type = {
   MISSED_VIDEO_CALL : 11,
   MISSED_SCREEN_SHARE : 12,
   MISSED_SECRET_CHAT : 13,
+  PINNED_MESSAGE : 14,
 };
 
 /**
@@ -1265,6 +1266,24 @@ proto.proto.RegisteredUser.prototype.setBio = function(value) {
 };
 
 /**
+ * Get RegisteredUser verified.
+ * @memberof ProtoRegisteredUser
+ * @return {boolean}
+ */
+proto.proto.RegisteredUser.prototype.getVerified = function() {
+  return this.verified;
+};
+
+/**
+ * Set RegisteredUser verified.
+ * @memberof ProtoRegisteredUser
+ * @param {boolean} value
+ */
+proto.proto.RegisteredUser.prototype.setVerified = function(value) {
+  this.verified = value;
+};
+
+/**
  * @typedef {number} ProtoRegisteredUser_Status
  */
 
@@ -1711,6 +1730,24 @@ proto.proto.RoomMessage.prototype.getPreviousMessageId = function() {
  */
 proto.proto.RoomMessage.prototype.setPreviousMessageId = function(value) {
   this.previousMessageId = value;
+};
+
+/**
+ * Get RoomMessage randomId.
+ * @memberof ProtoRoomMessage
+ * @return {Long}
+ */
+proto.proto.RoomMessage.prototype.getRandomId = function() {
+  return this.randomId;
+};
+
+/**
+ * Set RoomMessage randomId.
+ * @memberof ProtoRoomMessage
+ * @param {Long} value
+ */
+proto.proto.RoomMessage.prototype.setRandomId = function(value) {
+  this.randomId = value;
 };
 
 /**
@@ -2351,6 +2388,24 @@ proto.proto.Room.prototype.getPinId = function() {
  */
 proto.proto.Room.prototype.setPinId = function(value) {
   this.pinId = value;
+};
+
+/**
+ * Get Room pinnedMessage.
+ * @memberof ProtoRoom
+ * @return {(ProtoRoomMessage|null|undefined)}
+ */
+proto.proto.Room.prototype.getPinnedMessage = function() {
+  return this.pinnedMessage;
+};
+
+/**
+ * Set Room pinnedMessage.
+ * @memberof ProtoRoom
+ * @param {(ProtoRoomMessage|null|undefined)} value
+ */
+proto.proto.Room.prototype.setPinnedMessage = function(value) {
+  this.pinnedMessage = value;
 };
 
 /**
@@ -3026,6 +3081,42 @@ proto.proto.ChannelRoom.prototype.setSeenId = function(value) {
 };
 
 /**
+ * Get ChannelRoom verified.
+ * @memberof ProtoChannelRoom
+ * @return {boolean}
+ */
+proto.proto.ChannelRoom.prototype.getVerified = function() {
+  return this.verified;
+};
+
+/**
+ * Set ChannelRoom verified.
+ * @memberof ProtoChannelRoom
+ * @param {boolean} value
+ */
+proto.proto.ChannelRoom.prototype.setVerified = function(value) {
+  this.verified = value;
+};
+
+/**
+ * Get ChannelRoom reactionStatus.
+ * @memberof ProtoChannelRoom
+ * @return {boolean}
+ */
+proto.proto.ChannelRoom.prototype.getReactionStatus = function() {
+  return this.reactionStatus;
+};
+
+/**
+ * Set ChannelRoom reactionStatus.
+ * @memberof ProtoChannelRoom
+ * @param {boolean} value
+ */
+proto.proto.ChannelRoom.prototype.setReactionStatus = function(value) {
+  this.reactionStatus = value;
+};
+
+/**
  * @typedef {number} ProtoChannelRoom_Type
  */
 
@@ -3497,6 +3588,24 @@ proto.proto.File.prototype.getMime = function() {
  */
 proto.proto.File.prototype.setMime = function(value) {
   this.mime = value;
+};
+
+/**
+ * Get File publicUrl.
+ * @memberof ProtoFile
+ * @return {string}
+ */
+proto.proto.File.prototype.getPublicUrl = function() {
+  return this.publicUrl;
+};
+
+/**
+ * Set File publicUrl.
+ * @memberof ProtoFile
+ * @param {string} value
+ */
+proto.proto.File.prototype.setPublicUrl = function(value) {
+  this.publicUrl = value;
 };
 
 /**
@@ -6495,6 +6604,156 @@ proto.proto.ChannelLeftResponse.prototype.setMemberId = function(value) {
 };
 
 /**
+ * @interface ProtoChannelPinMessage
+ */
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {Uint8Array}
+ */
+proto.proto.ChannelPinMessage.prototype.serializeBinary = function() {
+  return proto.proto.ChannelPinMessage.encode(this).finish();
+};
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {Uint8Array} buffer
+ * @return {ProtoChannelPinMessage}
+ */
+proto.proto.ChannelPinMessage.deserializeBinary = function(buffer) {
+  return proto.proto.ChannelPinMessage.decode(buffer);
+};
+
+/**
+ * Get ChannelPinMessage request.
+ * @memberof ProtoChannelPinMessage
+ * @return {(ProtoRequest|null|undefined)}
+ */
+proto.proto.ChannelPinMessage.prototype.getRequest = function() {
+  return this.request;
+};
+
+/**
+ * Set ChannelPinMessage request.
+ * @memberof ProtoChannelPinMessage
+ * @param {(ProtoRequest|null|undefined)} value
+ */
+proto.proto.ChannelPinMessage.prototype.setRequest = function(value) {
+  this.request = value;
+};
+
+/**
+ * Get ChannelPinMessage roomId.
+ * @memberof ProtoChannelPinMessage
+ * @return {Long}
+ */
+proto.proto.ChannelPinMessage.prototype.getRoomId = function() {
+  return this.roomId;
+};
+
+/**
+ * Set ChannelPinMessage roomId.
+ * @memberof ProtoChannelPinMessage
+ * @param {Long} value
+ */
+proto.proto.ChannelPinMessage.prototype.setRoomId = function(value) {
+  this.roomId = value;
+};
+
+/**
+ * Get ChannelPinMessage messageId.
+ * @memberof ProtoChannelPinMessage
+ * @return {Long}
+ */
+proto.proto.ChannelPinMessage.prototype.getMessageId = function() {
+  return this.messageId;
+};
+
+/**
+ * Set ChannelPinMessage messageId.
+ * @memberof ProtoChannelPinMessage
+ * @param {Long} value
+ */
+proto.proto.ChannelPinMessage.prototype.setMessageId = function(value) {
+  this.messageId = value;
+};
+
+/**
+ * @interface ProtoChannelPinMessageResponse
+ */
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {Uint8Array}
+ */
+proto.proto.ChannelPinMessageResponse.prototype.serializeBinary = function() {
+  return proto.proto.ChannelPinMessageResponse.encode(this).finish();
+};
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {Uint8Array} buffer
+ * @return {ProtoChannelPinMessageResponse}
+ */
+proto.proto.ChannelPinMessageResponse.deserializeBinary = function(buffer) {
+  return proto.proto.ChannelPinMessageResponse.decode(buffer);
+};
+
+/**
+ * Get ChannelPinMessageResponse response.
+ * @memberof ProtoChannelPinMessageResponse
+ * @return {(ProtoResponse|null|undefined)}
+ */
+proto.proto.ChannelPinMessageResponse.prototype.getResponse = function() {
+  return this.response;
+};
+
+/**
+ * Set ChannelPinMessageResponse response.
+ * @memberof ProtoChannelPinMessageResponse
+ * @param {(ProtoResponse|null|undefined)} value
+ */
+proto.proto.ChannelPinMessageResponse.prototype.setResponse = function(value) {
+  this.response = value;
+};
+
+/**
+ * Get ChannelPinMessageResponse roomId.
+ * @memberof ProtoChannelPinMessageResponse
+ * @return {Long}
+ */
+proto.proto.ChannelPinMessageResponse.prototype.getRoomId = function() {
+  return this.roomId;
+};
+
+/**
+ * Set ChannelPinMessageResponse roomId.
+ * @memberof ProtoChannelPinMessageResponse
+ * @param {Long} value
+ */
+proto.proto.ChannelPinMessageResponse.prototype.setRoomId = function(value) {
+  this.roomId = value;
+};
+
+/**
+ * Get ChannelPinMessageResponse pinnedMessage.
+ * @memberof ProtoChannelPinMessageResponse
+ * @return {(ProtoRoomMessage|null|undefined)}
+ */
+proto.proto.ChannelPinMessageResponse.prototype.getPinnedMessage = function() {
+  return this.pinnedMessage;
+};
+
+/**
+ * Set ChannelPinMessageResponse pinnedMessage.
+ * @memberof ProtoChannelPinMessageResponse
+ * @param {(ProtoRoomMessage|null|undefined)} value
+ */
+proto.proto.ChannelPinMessageResponse.prototype.setPinnedMessage = function(value) {
+  this.pinnedMessage = value;
+};
+
+/**
  * @interface ProtoChannelRemoveUsername
  */
 
@@ -6942,6 +7201,24 @@ proto.proto.ChannelSendMessage.prototype.setForwardFrom = function(value) {
 };
 
 /**
+ * Get ChannelSendMessage randomId.
+ * @memberof ProtoChannelSendMessage
+ * @return {Long}
+ */
+proto.proto.ChannelSendMessage.prototype.getRandomId = function() {
+  return this.randomId;
+};
+
+/**
+ * Set ChannelSendMessage randomId.
+ * @memberof ProtoChannelSendMessage
+ * @param {Long} value
+ */
+proto.proto.ChannelSendMessage.prototype.setRandomId = function(value) {
+  this.randomId = value;
+};
+
+/**
  * @interface ProtoChannelSendMessageResponse
  */
 
@@ -7350,6 +7627,156 @@ proto.proto.ChannelUpdateDraftResponse.prototype.getDraft = function() {
  */
 proto.proto.ChannelUpdateDraftResponse.prototype.setDraft = function(value) {
   this.draft = value;
+};
+
+/**
+ * @interface ProtoChannelUpdateReactionStatus
+ */
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {Uint8Array}
+ */
+proto.proto.ChannelUpdateReactionStatus.prototype.serializeBinary = function() {
+  return proto.proto.ChannelUpdateReactionStatus.encode(this).finish();
+};
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {Uint8Array} buffer
+ * @return {ProtoChannelUpdateReactionStatus}
+ */
+proto.proto.ChannelUpdateReactionStatus.deserializeBinary = function(buffer) {
+  return proto.proto.ChannelUpdateReactionStatus.decode(buffer);
+};
+
+/**
+ * Get ChannelUpdateReactionStatus request.
+ * @memberof ProtoChannelUpdateReactionStatus
+ * @return {(ProtoRequest|null|undefined)}
+ */
+proto.proto.ChannelUpdateReactionStatus.prototype.getRequest = function() {
+  return this.request;
+};
+
+/**
+ * Set ChannelUpdateReactionStatus request.
+ * @memberof ProtoChannelUpdateReactionStatus
+ * @param {(ProtoRequest|null|undefined)} value
+ */
+proto.proto.ChannelUpdateReactionStatus.prototype.setRequest = function(value) {
+  this.request = value;
+};
+
+/**
+ * Get ChannelUpdateReactionStatus roomId.
+ * @memberof ProtoChannelUpdateReactionStatus
+ * @return {Long}
+ */
+proto.proto.ChannelUpdateReactionStatus.prototype.getRoomId = function() {
+  return this.roomId;
+};
+
+/**
+ * Set ChannelUpdateReactionStatus roomId.
+ * @memberof ProtoChannelUpdateReactionStatus
+ * @param {Long} value
+ */
+proto.proto.ChannelUpdateReactionStatus.prototype.setRoomId = function(value) {
+  this.roomId = value;
+};
+
+/**
+ * Get ChannelUpdateReactionStatus reactionStatus.
+ * @memberof ProtoChannelUpdateReactionStatus
+ * @return {boolean}
+ */
+proto.proto.ChannelUpdateReactionStatus.prototype.getReactionStatus = function() {
+  return this.reactionStatus;
+};
+
+/**
+ * Set ChannelUpdateReactionStatus reactionStatus.
+ * @memberof ProtoChannelUpdateReactionStatus
+ * @param {boolean} value
+ */
+proto.proto.ChannelUpdateReactionStatus.prototype.setReactionStatus = function(value) {
+  this.reactionStatus = value;
+};
+
+/**
+ * @interface ProtoChannelUpdateReactionStatusResponse
+ */
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {Uint8Array}
+ */
+proto.proto.ChannelUpdateReactionStatusResponse.prototype.serializeBinary = function() {
+  return proto.proto.ChannelUpdateReactionStatusResponse.encode(this).finish();
+};
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {Uint8Array} buffer
+ * @return {ProtoChannelUpdateReactionStatusResponse}
+ */
+proto.proto.ChannelUpdateReactionStatusResponse.deserializeBinary = function(buffer) {
+  return proto.proto.ChannelUpdateReactionStatusResponse.decode(buffer);
+};
+
+/**
+ * Get ChannelUpdateReactionStatusResponse response.
+ * @memberof ProtoChannelUpdateReactionStatusResponse
+ * @return {(ProtoResponse|null|undefined)}
+ */
+proto.proto.ChannelUpdateReactionStatusResponse.prototype.getResponse = function() {
+  return this.response;
+};
+
+/**
+ * Set ChannelUpdateReactionStatusResponse response.
+ * @memberof ProtoChannelUpdateReactionStatusResponse
+ * @param {(ProtoResponse|null|undefined)} value
+ */
+proto.proto.ChannelUpdateReactionStatusResponse.prototype.setResponse = function(value) {
+  this.response = value;
+};
+
+/**
+ * Get ChannelUpdateReactionStatusResponse roomId.
+ * @memberof ProtoChannelUpdateReactionStatusResponse
+ * @return {Long}
+ */
+proto.proto.ChannelUpdateReactionStatusResponse.prototype.getRoomId = function() {
+  return this.roomId;
+};
+
+/**
+ * Set ChannelUpdateReactionStatusResponse roomId.
+ * @memberof ProtoChannelUpdateReactionStatusResponse
+ * @param {Long} value
+ */
+proto.proto.ChannelUpdateReactionStatusResponse.prototype.setRoomId = function(value) {
+  this.roomId = value;
+};
+
+/**
+ * Get ChannelUpdateReactionStatusResponse reactionStatus.
+ * @memberof ProtoChannelUpdateReactionStatusResponse
+ * @return {boolean}
+ */
+proto.proto.ChannelUpdateReactionStatusResponse.prototype.getReactionStatus = function() {
+  return this.reactionStatus;
+};
+
+/**
+ * Set ChannelUpdateReactionStatusResponse reactionStatus.
+ * @memberof ProtoChannelUpdateReactionStatusResponse
+ * @param {boolean} value
+ */
+proto.proto.ChannelUpdateReactionStatusResponse.prototype.setReactionStatus = function(value) {
+  this.reactionStatus = value;
 };
 
 /**
@@ -8937,6 +9364,24 @@ proto.proto.ChatSendMessage.prototype.getForwardFrom = function() {
  */
 proto.proto.ChatSendMessage.prototype.setForwardFrom = function(value) {
   this.forwardFrom = value;
+};
+
+/**
+ * Get ChatSendMessage randomId.
+ * @memberof ProtoChatSendMessage
+ * @return {Long}
+ */
+proto.proto.ChatSendMessage.prototype.getRandomId = function() {
+  return this.randomId;
+};
+
+/**
+ * Set ChatSendMessage randomId.
+ * @memberof ProtoChatSendMessage
+ * @param {Long} value
+ */
+proto.proto.ChatSendMessage.prototype.setRandomId = function(value) {
+  this.randomId = value;
 };
 
 /**
@@ -11438,6 +11883,136 @@ proto.proto.ClientPinRoomResponse.prototype.getPinId = function() {
  */
 proto.proto.ClientPinRoomResponse.prototype.setPinId = function(value) {
   this.pinId = value;
+};
+
+/**
+ * @interface ProtoClientRegisterDevice
+ */
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {Uint8Array}
+ */
+proto.proto.ClientRegisterDevice.prototype.serializeBinary = function() {
+  return proto.proto.ClientRegisterDevice.encode(this).finish();
+};
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {Uint8Array} buffer
+ * @return {ProtoClientRegisterDevice}
+ */
+proto.proto.ClientRegisterDevice.deserializeBinary = function(buffer) {
+  return proto.proto.ClientRegisterDevice.decode(buffer);
+};
+
+/**
+ * Get ClientRegisterDevice request.
+ * @memberof ProtoClientRegisterDevice
+ * @return {(ProtoRequest|null|undefined)}
+ */
+proto.proto.ClientRegisterDevice.prototype.getRequest = function() {
+  return this.request;
+};
+
+/**
+ * Set ClientRegisterDevice request.
+ * @memberof ProtoClientRegisterDevice
+ * @param {(ProtoRequest|null|undefined)} value
+ */
+proto.proto.ClientRegisterDevice.prototype.setRequest = function(value) {
+  this.request = value;
+};
+
+/**
+ * Get ClientRegisterDevice token.
+ * @memberof ProtoClientRegisterDevice
+ * @return {string}
+ */
+proto.proto.ClientRegisterDevice.prototype.getToken = function() {
+  return this.token;
+};
+
+/**
+ * Set ClientRegisterDevice token.
+ * @memberof ProtoClientRegisterDevice
+ * @param {string} value
+ */
+proto.proto.ClientRegisterDevice.prototype.setToken = function(value) {
+  this.token = value;
+};
+
+/**
+ * Get ClientRegisterDevice type.
+ * @memberof ProtoClientRegisterDevice
+ * @return {ProtoClientRegisterDevice_Type}
+ */
+proto.proto.ClientRegisterDevice.prototype.getType = function() {
+  return this.type;
+};
+
+/**
+ * Set ClientRegisterDevice type.
+ * @memberof ProtoClientRegisterDevice
+ * @param {ProtoClientRegisterDevice_Type} value
+ */
+proto.proto.ClientRegisterDevice.prototype.setType = function(value) {
+  this.type = value;
+};
+
+/**
+ * @typedef {number} ProtoClientRegisterDevice_Type
+ */
+
+/**
+ * Type enum.
+ * @enum {ProtoClientRegisterDevice_Type}
+ * @memberof ProtoClientRegisterDevice
+ */
+proto.proto.ClientRegisterDevice.Type = proto.proto.ClientRegisterDevice.prototype.Type = {
+  GENERIC : 0,
+  ANDROID : 1,
+  IOS : 2,
+  WEB : 3,
+};
+
+/**
+ * @interface ProtoClientRegisterDeviceResponse
+ */
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {Uint8Array}
+ */
+proto.proto.ClientRegisterDeviceResponse.prototype.serializeBinary = function() {
+  return proto.proto.ClientRegisterDeviceResponse.encode(this).finish();
+};
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {Uint8Array} buffer
+ * @return {ProtoClientRegisterDeviceResponse}
+ */
+proto.proto.ClientRegisterDeviceResponse.deserializeBinary = function(buffer) {
+  return proto.proto.ClientRegisterDeviceResponse.decode(buffer);
+};
+
+/**
+ * Get ClientRegisterDeviceResponse response.
+ * @memberof ProtoClientRegisterDeviceResponse
+ * @return {(ProtoResponse|null|undefined)}
+ */
+proto.proto.ClientRegisterDeviceResponse.prototype.getResponse = function() {
+  return this.response;
+};
+
+/**
+ * Set ClientRegisterDeviceResponse response.
+ * @memberof ProtoClientRegisterDeviceResponse
+ * @param {(ProtoResponse|null|undefined)} value
+ */
+proto.proto.ClientRegisterDeviceResponse.prototype.setResponse = function(value) {
+  this.response = value;
 };
 
 /**
@@ -18021,6 +18596,156 @@ proto.proto.GroupLeftResponse.prototype.setMemberId = function(value) {
 };
 
 /**
+ * @interface ProtoGroupPinMessage
+ */
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {Uint8Array}
+ */
+proto.proto.GroupPinMessage.prototype.serializeBinary = function() {
+  return proto.proto.GroupPinMessage.encode(this).finish();
+};
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {Uint8Array} buffer
+ * @return {ProtoGroupPinMessage}
+ */
+proto.proto.GroupPinMessage.deserializeBinary = function(buffer) {
+  return proto.proto.GroupPinMessage.decode(buffer);
+};
+
+/**
+ * Get GroupPinMessage request.
+ * @memberof ProtoGroupPinMessage
+ * @return {(ProtoRequest|null|undefined)}
+ */
+proto.proto.GroupPinMessage.prototype.getRequest = function() {
+  return this.request;
+};
+
+/**
+ * Set GroupPinMessage request.
+ * @memberof ProtoGroupPinMessage
+ * @param {(ProtoRequest|null|undefined)} value
+ */
+proto.proto.GroupPinMessage.prototype.setRequest = function(value) {
+  this.request = value;
+};
+
+/**
+ * Get GroupPinMessage roomId.
+ * @memberof ProtoGroupPinMessage
+ * @return {Long}
+ */
+proto.proto.GroupPinMessage.prototype.getRoomId = function() {
+  return this.roomId;
+};
+
+/**
+ * Set GroupPinMessage roomId.
+ * @memberof ProtoGroupPinMessage
+ * @param {Long} value
+ */
+proto.proto.GroupPinMessage.prototype.setRoomId = function(value) {
+  this.roomId = value;
+};
+
+/**
+ * Get GroupPinMessage messageId.
+ * @memberof ProtoGroupPinMessage
+ * @return {Long}
+ */
+proto.proto.GroupPinMessage.prototype.getMessageId = function() {
+  return this.messageId;
+};
+
+/**
+ * Set GroupPinMessage messageId.
+ * @memberof ProtoGroupPinMessage
+ * @param {Long} value
+ */
+proto.proto.GroupPinMessage.prototype.setMessageId = function(value) {
+  this.messageId = value;
+};
+
+/**
+ * @interface ProtoGroupPinMessageResponse
+ */
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {Uint8Array}
+ */
+proto.proto.GroupPinMessageResponse.prototype.serializeBinary = function() {
+  return proto.proto.GroupPinMessageResponse.encode(this).finish();
+};
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {Uint8Array} buffer
+ * @return {ProtoGroupPinMessageResponse}
+ */
+proto.proto.GroupPinMessageResponse.deserializeBinary = function(buffer) {
+  return proto.proto.GroupPinMessageResponse.decode(buffer);
+};
+
+/**
+ * Get GroupPinMessageResponse response.
+ * @memberof ProtoGroupPinMessageResponse
+ * @return {(ProtoResponse|null|undefined)}
+ */
+proto.proto.GroupPinMessageResponse.prototype.getResponse = function() {
+  return this.response;
+};
+
+/**
+ * Set GroupPinMessageResponse response.
+ * @memberof ProtoGroupPinMessageResponse
+ * @param {(ProtoResponse|null|undefined)} value
+ */
+proto.proto.GroupPinMessageResponse.prototype.setResponse = function(value) {
+  this.response = value;
+};
+
+/**
+ * Get GroupPinMessageResponse roomId.
+ * @memberof ProtoGroupPinMessageResponse
+ * @return {Long}
+ */
+proto.proto.GroupPinMessageResponse.prototype.getRoomId = function() {
+  return this.roomId;
+};
+
+/**
+ * Set GroupPinMessageResponse roomId.
+ * @memberof ProtoGroupPinMessageResponse
+ * @param {Long} value
+ */
+proto.proto.GroupPinMessageResponse.prototype.setRoomId = function(value) {
+  this.roomId = value;
+};
+
+/**
+ * Get GroupPinMessageResponse pinnedMessage.
+ * @memberof ProtoGroupPinMessageResponse
+ * @return {(ProtoRoomMessage|null|undefined)}
+ */
+proto.proto.GroupPinMessageResponse.prototype.getPinnedMessage = function() {
+  return this.pinnedMessage;
+};
+
+/**
+ * Set GroupPinMessageResponse pinnedMessage.
+ * @memberof ProtoGroupPinMessageResponse
+ * @param {(ProtoRoomMessage|null|undefined)} value
+ */
+proto.proto.GroupPinMessageResponse.prototype.setPinnedMessage = function(value) {
+  this.pinnedMessage = value;
+};
+
+/**
  * @interface ProtoGroupRemoveUsername
  */
 
@@ -18465,6 +19190,24 @@ proto.proto.GroupSendMessage.prototype.getForwardFrom = function() {
  */
 proto.proto.GroupSendMessage.prototype.setForwardFrom = function(value) {
   this.forwardFrom = value;
+};
+
+/**
+ * Get GroupSendMessage randomId.
+ * @memberof ProtoGroupSendMessage
+ * @return {Long}
+ */
+proto.proto.GroupSendMessage.prototype.getRandomId = function() {
+  return this.randomId;
+};
+
+/**
+ * Set GroupSendMessage randomId.
+ * @memberof ProtoGroupSendMessage
+ * @param {Long} value
+ */
+proto.proto.GroupSendMessage.prototype.setRandomId = function(value) {
+  this.randomId = value;
 };
 
 /**
@@ -20001,6 +20744,378 @@ proto.proto.InfoWallpaperResponse.prototype.getWallpaperList = function() {
  */
 proto.proto.InfoWallpaperResponse.prototype.setWallpaperList = function(value) {
   this.wallpaper = value;
+};
+
+/**
+ * @interface ProtoMplGetBillToken
+ */
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {Uint8Array}
+ */
+proto.proto.MplGetBillToken.prototype.serializeBinary = function() {
+  return proto.proto.MplGetBillToken.encode(this).finish();
+};
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {Uint8Array} buffer
+ * @return {ProtoMplGetBillToken}
+ */
+proto.proto.MplGetBillToken.deserializeBinary = function(buffer) {
+  return proto.proto.MplGetBillToken.decode(buffer);
+};
+
+/**
+ * Get MplGetBillToken request.
+ * @memberof ProtoMplGetBillToken
+ * @return {(ProtoRequest|null|undefined)}
+ */
+proto.proto.MplGetBillToken.prototype.getRequest = function() {
+  return this.request;
+};
+
+/**
+ * Set MplGetBillToken request.
+ * @memberof ProtoMplGetBillToken
+ * @param {(ProtoRequest|null|undefined)} value
+ */
+proto.proto.MplGetBillToken.prototype.setRequest = function(value) {
+  this.request = value;
+};
+
+/**
+ * Get MplGetBillToken billId.
+ * @memberof ProtoMplGetBillToken
+ * @return {Long}
+ */
+proto.proto.MplGetBillToken.prototype.getBillId = function() {
+  return this.billId;
+};
+
+/**
+ * Set MplGetBillToken billId.
+ * @memberof ProtoMplGetBillToken
+ * @param {Long} value
+ */
+proto.proto.MplGetBillToken.prototype.setBillId = function(value) {
+  this.billId = value;
+};
+
+/**
+ * Get MplGetBillToken payId.
+ * @memberof ProtoMplGetBillToken
+ * @return {Long}
+ */
+proto.proto.MplGetBillToken.prototype.getPayId = function() {
+  return this.payId;
+};
+
+/**
+ * Set MplGetBillToken payId.
+ * @memberof ProtoMplGetBillToken
+ * @param {Long} value
+ */
+proto.proto.MplGetBillToken.prototype.setPayId = function(value) {
+  this.payId = value;
+};
+
+/**
+ * @interface ProtoMplGetBillTokenResponse
+ */
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {Uint8Array}
+ */
+proto.proto.MplGetBillTokenResponse.prototype.serializeBinary = function() {
+  return proto.proto.MplGetBillTokenResponse.encode(this).finish();
+};
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {Uint8Array} buffer
+ * @return {ProtoMplGetBillTokenResponse}
+ */
+proto.proto.MplGetBillTokenResponse.deserializeBinary = function(buffer) {
+  return proto.proto.MplGetBillTokenResponse.decode(buffer);
+};
+
+/**
+ * Get MplGetBillTokenResponse response.
+ * @memberof ProtoMplGetBillTokenResponse
+ * @return {(ProtoResponse|null|undefined)}
+ */
+proto.proto.MplGetBillTokenResponse.prototype.getResponse = function() {
+  return this.response;
+};
+
+/**
+ * Set MplGetBillTokenResponse response.
+ * @memberof ProtoMplGetBillTokenResponse
+ * @param {(ProtoResponse|null|undefined)} value
+ */
+proto.proto.MplGetBillTokenResponse.prototype.setResponse = function(value) {
+  this.response = value;
+};
+
+/**
+ * Get MplGetBillTokenResponse status.
+ * @memberof ProtoMplGetBillTokenResponse
+ * @return {number}
+ */
+proto.proto.MplGetBillTokenResponse.prototype.getStatus = function() {
+  return this.status;
+};
+
+/**
+ * Set MplGetBillTokenResponse status.
+ * @memberof ProtoMplGetBillTokenResponse
+ * @param {number} value
+ */
+proto.proto.MplGetBillTokenResponse.prototype.setStatus = function(value) {
+  this.status = value;
+};
+
+/**
+ * Get MplGetBillTokenResponse token.
+ * @memberof ProtoMplGetBillTokenResponse
+ * @return {string}
+ */
+proto.proto.MplGetBillTokenResponse.prototype.getToken = function() {
+  return this.token;
+};
+
+/**
+ * Set MplGetBillTokenResponse token.
+ * @memberof ProtoMplGetBillTokenResponse
+ * @param {string} value
+ */
+proto.proto.MplGetBillTokenResponse.prototype.setToken = function(value) {
+  this.token = value;
+};
+
+/**
+ * Get MplGetBillTokenResponse expireTime.
+ * @memberof ProtoMplGetBillTokenResponse
+ * @return {number}
+ */
+proto.proto.MplGetBillTokenResponse.prototype.getExpireTime = function() {
+  return this.expireTime;
+};
+
+/**
+ * Set MplGetBillTokenResponse expireTime.
+ * @memberof ProtoMplGetBillTokenResponse
+ * @param {number} value
+ */
+proto.proto.MplGetBillTokenResponse.prototype.setExpireTime = function(value) {
+  this.expireTime = value;
+};
+
+/**
+ * @interface ProtoMplGetTopupToken
+ */
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {Uint8Array}
+ */
+proto.proto.MplGetTopupToken.prototype.serializeBinary = function() {
+  return proto.proto.MplGetTopupToken.encode(this).finish();
+};
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {Uint8Array} buffer
+ * @return {ProtoMplGetTopupToken}
+ */
+proto.proto.MplGetTopupToken.deserializeBinary = function(buffer) {
+  return proto.proto.MplGetTopupToken.decode(buffer);
+};
+
+/**
+ * Get MplGetTopupToken request.
+ * @memberof ProtoMplGetTopupToken
+ * @return {(ProtoRequest|null|undefined)}
+ */
+proto.proto.MplGetTopupToken.prototype.getRequest = function() {
+  return this.request;
+};
+
+/**
+ * Set MplGetTopupToken request.
+ * @memberof ProtoMplGetTopupToken
+ * @param {(ProtoRequest|null|undefined)} value
+ */
+proto.proto.MplGetTopupToken.prototype.setRequest = function(value) {
+  this.request = value;
+};
+
+/**
+ * Get MplGetTopupToken chargeMobileNumber.
+ * @memberof ProtoMplGetTopupToken
+ * @return {Long}
+ */
+proto.proto.MplGetTopupToken.prototype.getChargeMobileNumber = function() {
+  return this.chargeMobileNumber;
+};
+
+/**
+ * Set MplGetTopupToken chargeMobileNumber.
+ * @memberof ProtoMplGetTopupToken
+ * @param {Long} value
+ */
+proto.proto.MplGetTopupToken.prototype.setChargeMobileNumber = function(value) {
+  this.chargeMobileNumber = value;
+};
+
+/**
+ * Get MplGetTopupToken amount.
+ * @memberof ProtoMplGetTopupToken
+ * @return {Long}
+ */
+proto.proto.MplGetTopupToken.prototype.getAmount = function() {
+  return this.amount;
+};
+
+/**
+ * Set MplGetTopupToken amount.
+ * @memberof ProtoMplGetTopupToken
+ * @param {Long} value
+ */
+proto.proto.MplGetTopupToken.prototype.setAmount = function(value) {
+  this.amount = value;
+};
+
+/**
+ * Get MplGetTopupToken type.
+ * @memberof ProtoMplGetTopupToken
+ * @return {ProtoMplGetTopupToken_Type}
+ */
+proto.proto.MplGetTopupToken.prototype.getType = function() {
+  return this.type;
+};
+
+/**
+ * Set MplGetTopupToken type.
+ * @memberof ProtoMplGetTopupToken
+ * @param {ProtoMplGetTopupToken_Type} value
+ */
+proto.proto.MplGetTopupToken.prototype.setType = function(value) {
+  this.type = value;
+};
+
+/**
+ * @typedef {number} ProtoMplGetTopupToken_Type
+ */
+
+/**
+ * Type enum.
+ * @enum {ProtoMplGetTopupToken_Type}
+ * @memberof ProtoMplGetTopupToken
+ */
+proto.proto.MplGetTopupToken.Type = proto.proto.MplGetTopupToken.prototype.Type = {
+  IRANCELL_PREPAID : 0,
+  IRANCELL_WOW : 1,
+  IRANCELL_WIMAX : 2,
+  IRANCELL_POSTPAID : 3,
+  MCI : 4,
+  RIGHTEL : 5,
+};
+
+/**
+ * @interface ProtoMplGetTopupTokenResponse
+ */
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {Uint8Array}
+ */
+proto.proto.MplGetTopupTokenResponse.prototype.serializeBinary = function() {
+  return proto.proto.MplGetTopupTokenResponse.encode(this).finish();
+};
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {Uint8Array} buffer
+ * @return {ProtoMplGetTopupTokenResponse}
+ */
+proto.proto.MplGetTopupTokenResponse.deserializeBinary = function(buffer) {
+  return proto.proto.MplGetTopupTokenResponse.decode(buffer);
+};
+
+/**
+ * Get MplGetTopupTokenResponse response.
+ * @memberof ProtoMplGetTopupTokenResponse
+ * @return {(ProtoResponse|null|undefined)}
+ */
+proto.proto.MplGetTopupTokenResponse.prototype.getResponse = function() {
+  return this.response;
+};
+
+/**
+ * Set MplGetTopupTokenResponse response.
+ * @memberof ProtoMplGetTopupTokenResponse
+ * @param {(ProtoResponse|null|undefined)} value
+ */
+proto.proto.MplGetTopupTokenResponse.prototype.setResponse = function(value) {
+  this.response = value;
+};
+
+/**
+ * Get MplGetTopupTokenResponse status.
+ * @memberof ProtoMplGetTopupTokenResponse
+ * @return {number}
+ */
+proto.proto.MplGetTopupTokenResponse.prototype.getStatus = function() {
+  return this.status;
+};
+
+/**
+ * Set MplGetTopupTokenResponse status.
+ * @memberof ProtoMplGetTopupTokenResponse
+ * @param {number} value
+ */
+proto.proto.MplGetTopupTokenResponse.prototype.setStatus = function(value) {
+  this.status = value;
+};
+
+/**
+ * Get MplGetTopupTokenResponse token.
+ * @memberof ProtoMplGetTopupTokenResponse
+ * @return {string}
+ */
+proto.proto.MplGetTopupTokenResponse.prototype.getToken = function() {
+  return this.token;
+};
+
+/**
+ * Set MplGetTopupTokenResponse token.
+ * @memberof ProtoMplGetTopupTokenResponse
+ * @param {string} value
+ */
+proto.proto.MplGetTopupTokenResponse.prototype.setToken = function(value) {
+  this.token = value;
+};
+
+/**
+ * Get MplGetTopupTokenResponse expireTime.
+ * @memberof ProtoMplGetTopupTokenResponse
+ * @return {number}
+ */
+proto.proto.MplGetTopupTokenResponse.prototype.getExpireTime = function() {
+  return this.expireTime;
+};
+
+/**
+ * Set MplGetTopupTokenResponse expireTime.
+ * @memberof ProtoMplGetTopupTokenResponse
+ * @param {number} value
+ */
+proto.proto.MplGetTopupTokenResponse.prototype.setExpireTime = function(value) {
+  this.expireTime = value;
 };
 
 /**
@@ -29654,6 +30769,151 @@ proto.proto.UserVerifyNewDeviceResponse.prototype.getTwoStepVerification = funct
  */
 proto.proto.UserVerifyNewDeviceResponse.prototype.setTwoStepVerification = function(value) {
   this.twoStepVerification = value;
+};
+
+/**
+ * @interface ProtoWalletGetAccessToken
+ */
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {Uint8Array}
+ */
+proto.proto.WalletGetAccessToken.prototype.serializeBinary = function() {
+  return proto.proto.WalletGetAccessToken.encode(this).finish();
+};
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {Uint8Array} buffer
+ * @return {ProtoWalletGetAccessToken}
+ */
+proto.proto.WalletGetAccessToken.deserializeBinary = function(buffer) {
+  return proto.proto.WalletGetAccessToken.decode(buffer);
+};
+
+/**
+ * Get WalletGetAccessToken request.
+ * @memberof ProtoWalletGetAccessToken
+ * @return {(ProtoRequest|null|undefined)}
+ */
+proto.proto.WalletGetAccessToken.prototype.getRequest = function() {
+  return this.request;
+};
+
+/**
+ * Set WalletGetAccessToken request.
+ * @memberof ProtoWalletGetAccessToken
+ * @param {(ProtoRequest|null|undefined)} value
+ */
+proto.proto.WalletGetAccessToken.prototype.setRequest = function(value) {
+  this.request = value;
+};
+
+/**
+ * @interface ProtoWalletGetAccessTokenResponse
+ */
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {Uint8Array}
+ */
+proto.proto.WalletGetAccessTokenResponse.prototype.serializeBinary = function() {
+  return proto.proto.WalletGetAccessTokenResponse.encode(this).finish();
+};
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {Uint8Array} buffer
+ * @return {ProtoWalletGetAccessTokenResponse}
+ */
+proto.proto.WalletGetAccessTokenResponse.deserializeBinary = function(buffer) {
+  return proto.proto.WalletGetAccessTokenResponse.decode(buffer);
+};
+
+/**
+ * Get WalletGetAccessTokenResponse response.
+ * @memberof ProtoWalletGetAccessTokenResponse
+ * @return {(ProtoResponse|null|undefined)}
+ */
+proto.proto.WalletGetAccessTokenResponse.prototype.getResponse = function() {
+  return this.response;
+};
+
+/**
+ * Set WalletGetAccessTokenResponse response.
+ * @memberof ProtoWalletGetAccessTokenResponse
+ * @param {(ProtoResponse|null|undefined)} value
+ */
+proto.proto.WalletGetAccessTokenResponse.prototype.setResponse = function(value) {
+  this.response = value;
+};
+
+/**
+ * Get WalletGetAccessTokenResponse tokenType.
+ * @memberof ProtoWalletGetAccessTokenResponse
+ * @return {ProtoWalletGetAccessTokenResponse_TokenType}
+ */
+proto.proto.WalletGetAccessTokenResponse.prototype.getTokenType = function() {
+  return this.tokenType;
+};
+
+/**
+ * Set WalletGetAccessTokenResponse tokenType.
+ * @memberof ProtoWalletGetAccessTokenResponse
+ * @param {ProtoWalletGetAccessTokenResponse_TokenType} value
+ */
+proto.proto.WalletGetAccessTokenResponse.prototype.setTokenType = function(value) {
+  this.tokenType = value;
+};
+
+/**
+ * Get WalletGetAccessTokenResponse accessToken.
+ * @memberof ProtoWalletGetAccessTokenResponse
+ * @return {string}
+ */
+proto.proto.WalletGetAccessTokenResponse.prototype.getAccessToken = function() {
+  return this.accessToken;
+};
+
+/**
+ * Set WalletGetAccessTokenResponse accessToken.
+ * @memberof ProtoWalletGetAccessTokenResponse
+ * @param {string} value
+ */
+proto.proto.WalletGetAccessTokenResponse.prototype.setAccessToken = function(value) {
+  this.accessToken = value;
+};
+
+/**
+ * Get WalletGetAccessTokenResponse expiresIn.
+ * @memberof ProtoWalletGetAccessTokenResponse
+ * @return {number}
+ */
+proto.proto.WalletGetAccessTokenResponse.prototype.getExpiresIn = function() {
+  return this.expiresIn;
+};
+
+/**
+ * Set WalletGetAccessTokenResponse expiresIn.
+ * @memberof ProtoWalletGetAccessTokenResponse
+ * @param {number} value
+ */
+proto.proto.WalletGetAccessTokenResponse.prototype.setExpiresIn = function(value) {
+  this.expiresIn = value;
+};
+
+/**
+ * @typedef {number} ProtoWalletGetAccessTokenResponse_TokenType
+ */
+
+/**
+ * TokenType enum.
+ * @enum {ProtoWalletGetAccessTokenResponse_TokenType}
+ * @memberof ProtoWalletGetAccessTokenResponse
+ */
+proto.proto.WalletGetAccessTokenResponse.TokenType = proto.proto.WalletGetAccessTokenResponse.prototype.TokenType = {
+  BEARER : 0,
 };
 
 export default proto;

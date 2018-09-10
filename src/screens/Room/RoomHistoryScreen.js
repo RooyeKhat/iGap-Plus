@@ -4,30 +4,19 @@ import {isArray, keys} from 'lodash';
 import {injectIntl, intlShape} from 'react-intl';
 import SaveTo from '../../../native/modules/SaveTo';
 import Share from '../../modules/Share/index';
-import {getRoom} from '../../selector/entities/room';
-import RNIGFileSystem, {FileUtil} from 'react-native-file-system';
+import {getRoom, getRoomPeer} from '../../selector/entities/room';
 import loadRoomHistory, {getRoomFirstMessageId, getRoomLastMessageId} from '../../modules/Messenger/loadRoomHistory';
 import RoomHistoryComponent from '../../components/Room/RoomHistory';
 import {getRoomMessageList} from '../../selector/messenger/roomMessage';
-import {
-  goCamera,
-  goContactPicker,
-  goLocationPicker,
-  goRoomHistory,
-  goRoomInfo,
-  goRoomReport,
-} from '../../navigators/SecondaryNavigator';
+import {goRoomHistory, goRoomInfo, goRoomPicker, goRoomReport} from '../../navigators/SecondaryNavigator';
 import {
   blurRoom,
   deleteMessages,
   dispatchMessengerRoomAddList,
-  editRoomMessage,
   focusRoom,
   forwardToList,
   resendMessage,
-  sendActionRequest,
   sendMessage,
-  sendMultiAttachMessages,
 } from '../../utils/messenger';
 import {
   ROOM_MESSAGE_ACTION_DELETE,
@@ -35,15 +24,10 @@ import {
   ROOM_MESSAGE_ACTION_FORWARD,
   ROOM_MESSAGE_ACTION_REPLY,
   ROOM_MESSAGE_ACTION_REPORT,
-  ROOM_MESSAGE_ATTACHMENT_TYPE_AUDIO,
-  ROOM_MESSAGE_ATTACHMENT_TYPE_FILE,
-  ROOM_MESSAGE_ATTACHMENT_TYPE_IMAGE,
-  ROOM_MESSAGE_ATTACHMENT_TYPE_VIDEO,
-  ROOM_MESSAGE_ATTACHMENT_TYPE_VOICE,
 } from '../../constants/app';
 import {
-  filesPicker,
   getAuthorHash,
+  getChatDeleteMessageForBothPeriod,
   getMessageDownloadFileUri,
   saveToDownloads,
   saveToGallery,
@@ -58,24 +42,32 @@ import {
   ClientUnsubscribeFromRoom,
   Proto,
 } from '../../modules/Proto/index';
-import {getEntitiesRoomMessageFunc, getEntitiesRoomMessageTypeFunc} from '../../selector/entities/roomMessage';
+import {getEntitiesRoomMessageFunc} from '../../selector/entities/roomMessage';
 import {
   CLIENT_JOIN_BY_USERNAME,
   CLIENT_MUTE_ROOM,
   CLIENT_SUBSCRIBE_TO_ROOM,
   CLIENT_UNSUBSCRIBE_FROM_ROOM,
+  INFO_WALLPAPER_RESPONSE,
 } from '../../constants/methods/index';
-import Api from '../../modules/Api/index';
+import Api, {getServerTime} from '../../modules/Api/index';
 import i18n from '../../i18n';
-import {getImageSize, prependFileProtocol, sleep} from '../../utils/core';
+import {objectToUint8Array, prependFileProtocol, sleep} from '../../utils/core';
 import Clipboard from '../../modules/Clipboard/index';
 import {messengerRoomMessageClearMessageFromStore} from '../../actions/messenger/roomMessages';
-import {cameraMode} from '../General/CameraScreen';
-import {getUserFunc} from '../../selector/entities/registeredUser';
 import {entitiesRoomEdit} from '../../actions/entities/rooms';
 import {getMessagesDimension} from '../../modules/DimensionCalculator/index';
 import {CLIENT_GET_ROOM_HISTORY_PAGINATION_LIMIT} from '../../constants/configs';
 import {apiInvoke} from '../../modules/Entities/Rooms/index';
+import {fileManagerDownload} from '../../actions/fileManager';
+import {FILE_MANAGER_DOWNLOAD_MANNER} from '../../constants/fileManager';
+import MetaData from '../../models/MetaData';
+import {METADATA_USER_SELECTED_WALLPAPER, METADATA_USER_WALLPAPER_DATA} from '../../models/MetaData/constant';
+import protoTable from '../../modules/Proto';
+import {goUserQrCodeLoginScreen} from '../../navigators/AppNavigator';
+import {qrMode} from '../User/UserQrCodeLoginScreen';
+
+let priority = 1000000;
 
 class RoomHistoryScreen extends PureComponent {
 
@@ -93,8 +85,10 @@ class RoomHistoryScreen extends PureComponent {
       try {
         this.loading = true;
         const roomMessages = await loadRoomHistory(room.id, getRoomLastMessageId(room.id) || room.lastMessage, false);
-        const offsetTop = getMessagesDimension(roomMessages, room.type);
-        this.flatList.scrollToOffset(0, offsetTop);
+        if (roomMessages.length) {
+          const offsetTop = getMessagesDimension(roomMessages, room.type);
+          this.flatList.scrollToOffset(0, offsetTop);
+        }
       } finally {
         await sleep(1);
         this.loading = false;
@@ -119,7 +113,25 @@ class RoomHistoryScreen extends PureComponent {
     if (room) {
       this.initializeRoom(room);
     }
+    this.loadBackground();
   }
+
+  loadBackground = async () => {
+    const selectedWallpaper = await MetaData.load(METADATA_USER_SELECTED_WALLPAPER);
+    if (selectedWallpaper !== null && selectedWallpaper >= 0) {
+      const wallpaperData = await MetaData.load(METADATA_USER_WALLPAPER_DATA);
+      if (wallpaperData !== null || wallpaperData.data !== null) {
+        const responseProto = protoTable[INFO_WALLPAPER_RESPONSE].deserializeBinary(objectToUint8Array(wallpaperData.data));
+        this.setState({
+          selectedBackGround: {
+            index: selectedWallpaper,
+            avatar: responseProto.getWallpaperList()[selectedWallpaper],
+          },
+        });
+      }
+    }
+  };
+
 
   scrollToIndex = async () => {
     const {room, messageList} = this.props;
@@ -158,23 +170,16 @@ class RoomHistoryScreen extends PureComponent {
     super(props);
     this.initialized = false;
     this.loading = false;
-    this.typingId = null;
-    this.recordingVoiceId = null;
-    this.typingTimeout = null;
     this.state = {
-      text: '',
-      pickedFile: null,
-      attachmentType: null,
-      replyTo: null,
-      forwardedMessage: null,
-      editMessageId: null,
       selectedList: {},
       selectedCount: 0,
+      toolbarActions: [],
       access: {
         sendMessage: false,
         editMessage: false,
         deleteMessage: false,
       },
+      selectedBackGround: null,
     };
   }
 
@@ -189,7 +194,7 @@ class RoomHistoryScreen extends PureComponent {
   }
 
   async initializeRoom(room) {
-    const {messageList} = this.props;
+    const {messageList, editRoom} = this.props;
     this.initialized = true;
     this.setAccess(room);
     focusRoom(room.id);
@@ -228,10 +233,10 @@ class RoomHistoryScreen extends PureComponent {
           sendMessage(room.id, null, null, null, null, forwardedMessage);
         });
       } else {
-        this.setState({forwardedMessage: forwardParam});
+        this.sendBox.setForwardMessage(forwardParam);
       }
     }
-
+    editRoom(room.id, {unreadCount: 0});
     if (!room.isParticipant) {
       const clientSubscribeToRoom = new ClientSubscribeToRoom();
       clientSubscribeToRoom.setRoomId(room.id);
@@ -250,7 +255,7 @@ class RoomHistoryScreen extends PureComponent {
 
     this.setState({
       access: {
-        sendMessage: room.isParticipant && (isChat || isGroup || (isChannel && (isModerator || isAdmin || isOwner))),
+        sendMessage: room.isParticipant && (isChat || isGroup || (isChannel && (isModerator || isAdmin || isOwner))) && !room.readOnly,
         editMessage: false,
         deleteMessage: room.isParticipant && (isChat || isGroup || (isChannel && (isModerator || isAdmin || isOwner))),
       },
@@ -260,165 +265,6 @@ class RoomHistoryScreen extends PureComponent {
   goRoomInfoBtn = () => {
     const {room} = this.props;
     goRoomInfo(room.id);
-  };
-
-  onChangeText = (text) => {
-    const {room} = this.props;
-    this.setState({text});
-    if (!text) {
-      return;
-    }
-    if (!this.typingId) {
-      this.typingId = sendActionRequest(room.id, Proto.ClientAction.TYPING);
-    }
-    clearTimeout(this.typingTimeout);
-    this.typingTimeout = setTimeout(() => {
-      if (this.typingId) {
-        sendActionRequest(room.id, Proto.ClientAction.CANCEL, this.typingId);
-        this.typingId = null;
-      }
-    }, 3000);
-  };
-
-  /**
-   * @param text
-   * @returns {Promise.<void>}
-   */
-  submitForm = (text) => {
-    const {room, getRoomMessage} = this.props;
-    const {editMessageId, pickedFile, attachmentType, replyTo, forwardedMessage} = this.state;
-    try {
-      if (!editMessageId) {
-        sendMessage(room.id, text, pickedFile, attachmentType, replyTo ? replyTo.longId : null, forwardedMessage);
-      } else {
-        const roomMessage = getRoomMessage(editMessageId);
-        editRoomMessage(room.id, roomMessage.longId, text);
-      }
-    } finally {
-      this.setState({
-        editMessageId: null,
-        text: '',
-        pickedFile: null,
-        attachmentType: null,
-        replyTo: null,
-        forwardedMessage: null,
-      });
-      if (this.typingId) {
-        sendActionRequest(room.id, Proto.ClientAction.CANCEL, this.typingId);
-        this.typingId = null;
-      }
-    }
-  };
-  selectAttachment = async (type) => {
-    let fileType;
-    const {room} = this.props;
-    switch (type) {
-      case ROOM_MESSAGE_ATTACHMENT_TYPE_IMAGE:
-        fileType = FileUtil.images();
-        break;
-      case ROOM_MESSAGE_ATTACHMENT_TYPE_AUDIO:
-        fileType = FileUtil.audios();
-        break;
-      case ROOM_MESSAGE_ATTACHMENT_TYPE_VIDEO:
-        fileType = FileUtil.videos();
-        break;
-      case ROOM_MESSAGE_ATTACHMENT_TYPE_FILE:
-        fileType = FileUtil.allFiles();
-        break;
-      default:
-        throw new Error('Invalid File Picker Format');
-    }
-    const files = await filesPicker(fileType);
-    files.map(async function(file) {
-      const size = await getImageSize(prependFileProtocol(file.fileUri));
-      file.width = size.width;
-      file.height = size.height;
-    });
-    if (files.length === 1) {
-      this.setState({
-        pickedFile: files[0],
-        attachmentType: type,
-      });
-    } else {
-      sendMultiAttachMessages(room.id, files, type);
-    }
-  };
-
-  selectCamera = () => {
-    const {intl} = this.props;
-    const denialMessage = [
-      intl.formatMessage(i18n.roomHistoryCameraPermission),
-      intl.formatMessage(i18n.roomHistoryCameraPermissionMessage),
-      intl.formatMessage(i18n.roomHistoryStoragePermission),
-      intl.formatMessage(i18n.roomHistoryStoragePermissionMessage),
-    ];
-    goCamera(
-      async (path) => {
-        const pickedFile = await RNIGFileSystem.fInfo(path);
-        const size = await getImageSize(path);
-        pickedFile.width = size.width;
-        pickedFile.height = size.height;
-        this.setState({
-          pickedFile: pickedFile,
-          attachmentType: ROOM_MESSAGE_ATTACHMENT_TYPE_IMAGE,
-        });
-      },
-      (error) => {
-      },
-      cameraMode.CAMERA,
-      denialMessage
-    );
-  };
-
-  selectContact = () => {
-    const {room, getRegisteredUser} = this.props;
-    goContactPicker(i18n.roomHistoryPickContactTitle, (userId) => {
-      const user = getRegisteredUser(userId.toString());
-      if (user) {
-        const roomMessageContact = new Proto.RoomMessageContact();
-        roomMessageContact.setFirstName(user.firstName);
-        roomMessageContact.setLastName(user.lastName);
-        roomMessageContact.setNickname(user.displayName);
-        roomMessageContact.setPhoneList([user.phone.toString()]);
-        sendMessage(room.id, '', null, null, null, null, roomMessageContact);
-      }
-    }, false);
-  };
-
-  selectLocation = () => {
-    const {room} = this.props;
-    goLocationPicker((coordinate) => {
-      const roomMessageLocation = new Proto.RoomMessageLocation();
-      roomMessageLocation.setLat(coordinate.latitude);
-      roomMessageLocation.setLon(coordinate.longitude);
-      sendMessage(room.id, '', null, null, null, null, null, roomMessageLocation);
-    });
-  };
-
-  onStartRecordSound = () => {
-    const {room} = this.props;
-    if (!this.recordingVoiceId) {
-      this.recordingVoiceId = sendActionRequest(room.id, Proto.ClientAction.RECORDING_VOICE);
-    }
-  };
-
-  onEndRecordSound = async (path) => {
-    const {room} = this.props;
-    if (path) {
-      const pickedFile = await RNIGFileSystem.fInfo(path);
-      await sendMessage(room.id, '', pickedFile, ROOM_MESSAGE_ATTACHMENT_TYPE_VOICE);
-    }
-    if (this.recordingVoiceId) {
-      sendActionRequest(room.id, Proto.ClientAction.CANCEL, this.recordingVoiceId);
-      this.recordingVoiceId = null;
-    }
-  };
-
-  cancelAttach = () => {
-    this.setState({
-      pickedFile: null,
-      attachmentType: null,
-    });
   };
 
   onMessagePress = (message) => {
@@ -457,6 +303,7 @@ class RoomHistoryScreen extends PureComponent {
         ...prevState,
         selectedCount,
         selectedList,
+        toolbarActions: this.getToolbarAction(selectedCount),
         access: {
           ...prevState.access,
           editMessage: firstRoomMessage ? (
@@ -474,13 +321,14 @@ class RoomHistoryScreen extends PureComponent {
     this.setState({
       selectedCount: 0,
       selectedList: {},
+      toolbarActions: this.getToolbarAction(0),
     });
   };
 
-  getToolbarAction = () => {
+  getToolbarAction = (selectedCount) => {
     const actions = [];
     const {room} = this.props;
-    const {selectedCount, access} = this.state;
+    const {access} = this.state;
 
     if (room.isParticipant && selectedCount === 1 && access.sendMessage) {
       actions.push(ROOM_MESSAGE_ACTION_REPLY);
@@ -525,10 +373,7 @@ class RoomHistoryScreen extends PureComponent {
         break;
       case ROOM_MESSAGE_ACTION_EDIT:
         if (roomMessage) {
-          this.setState({
-            text: roomMessage.message,
-            editMessageId: roomMessage.id,
-          });
+          this.sendBox.setEditMessage(roomMessage);
         }
         break;
     }
@@ -536,24 +381,11 @@ class RoomHistoryScreen extends PureComponent {
   };
 
   actionReply = (message) => {
-    this.setState({
-      replyTo: message,
-    });
-  };
-  cancelReply = () => {
-    this.setState({
-      replyTo: null,
-    });
-  };
-
-  forwardModalControl = (ref) => {
-    if (ref) {
-      this.forwardModal = ref.getWrappedInstance();
-    }
+    this.sendBox.setReplyTo(message);
   };
 
   actionForward = (message) => {
-    this.forwardModal.open(selectList => {
+    goRoomPicker(selectList => {
       if (selectList.length === 1 && selectList[0].roomId) {
         goRoomHistory(selectList[0].roomId, message);
       } else {
@@ -562,29 +394,29 @@ class RoomHistoryScreen extends PureComponent {
     });
   };
 
-  cancelForward = () => {
-    this.setState({
-      forwardedMessage: null,
-    });
-  };
-
   actionDeleteMessages = (selectedList) => {
-    const {room} = this.props;
+    const {room, intl, getRoomMessage} = this.props;
+    let _allowDeleteForBoth = room.type === Proto.Room.Type.CHAT;
+    keys(selectedList).forEach((key) => {
+      const message = getRoomMessage(key);
+      _allowDeleteForBoth =
+        _allowDeleteForBoth &&
+        message &&
+        message.authorHash === getAuthorHash() &&
+        getServerTime() < getRoomMessage(key).createTime + getChatDeleteMessageForBothPeriod();
+    });
+
     this.confirm.open(i18n.roomHistoryDeleteMessagesTitle, {
       ...i18n.roomHistoryDeleteMessagesDescription, values: {
         roomTitle: room.title,
         count: keys(selectedList).length,
       },
-    }, () => {
-      deleteMessages(room.id, keys(selectedList));
-    });
-  };
-
-  cancelEdit = () => {
-    this.setState({
-      editMessageId: null,
-      text: '',
-    });
+    }, (both) => {
+      deleteMessages(room.id, keys(selectedList), both);
+    }, _allowDeleteForBoth ? {
+      label: intl.formatMessage(i18n.roomHistoryDeleteMessageForBoth, {userTitle: room.title}),
+      value: 'checkbox',
+    } : null);
   };
 
   confirmControl = (confirm) => {
@@ -664,10 +496,7 @@ class RoomHistoryScreen extends PureComponent {
         icon: 'edit',
         title: intl.formatMessage(i18n.roomHistoryActionEdit),
         onPress: () => {
-          this.setState({
-            text: roomMessage.message,
-            editMessageId: roomMessage.id,
-          });
+          this.sendBox.setEditMessage(roomMessage);
         },
       });
     }
@@ -732,38 +561,67 @@ class RoomHistoryScreen extends PureComponent {
       case 0:
         goRoomReport(room.id);
         break;
+      case 1:
+        this.getQrLink(room);
+        break;
     }
   };
 
+  getQrLink = (room) => {
+    switch (room.type) {
+      case 0:                                 //chat
+        const {chatUserName} = this.props;
+        if (chatUserName) {
+          goUserQrCodeLoginScreen(qrMode.RESOLVE, {username: chatUserName, message_id: 0});
+        }
+        break;
+      case 1:                               //group
+        if (room.groupType === 0) {
+          if (room.groupPrivateInviteToken && room.groupPrivateInviteToken.length > 0) {
+            goUserQrCodeLoginScreen(qrMode.JOIN, {invite_token: room.groupPrivateInviteToken});
+          }
+        } else {
+          if (room.groupPublicUsername && room.groupPublicUsername.length > 0) {
+            goUserQrCodeLoginScreen(qrMode.RESOLVE, {username: room.groupPublicUsername, message_id: 0});
+          }
+        }
+        break;
+      case 2:                              //channel
+        if (room.channelType === 0) {
+          if (room.channelPrivateInviteToken && room.channelPrivateInviteToken.length > 0) {
+            goUserQrCodeLoginScreen(qrMode.JOIN, {invite_token: room.channelPrivateInviteToken});
+          }
+        } else {
+          if (room.channelPublicUsername && room.channelPublicUsername.length > 0) {
+            goUserQrCodeLoginScreen(qrMode.RESOLVE, {username: room.channelPublicUsername, message_id: 0});
+          }
+        }
+        break;
+    }
+  };
+
+  controlSendBox = (sendBox) => {
+    this.sendBox = sendBox;
+  };
+
+  startAvatarDownload = (index) => {
+    const {download} = this.props;
+    download(this.state.selectedBackGround.avatar.file);
+  };
+
+  stopAvatarDownload = (index) => {
+    //backGround chat must download without stop
+  };
+
+
   render() {
-    const {room, clientUpdating, messageList, getRoomMessage, getRoomMessageType} = this.props;
-    const {text, pickedFile, replyTo, forwardedMessage, editMessageId, selectedCount, selectedList} = this.state;
-    const Form = {
-      text,
-      replyTo,
-      pickedFile,
-      editMessageId,
-      forwardedMessage,
-      selectAttachment: this.selectAttachment,
-      selectCamera: this.selectCamera,
-      selectContact: this.selectContact,
-      selectLocation: this.selectLocation,
-      onStartRecordSound: this.onStartRecordSound,
-      onEndRecordSound: this.onEndRecordSound,
-      cancelAttach: this.cancelAttach,
-      onChangeText: this.onChangeText,
-      submitForm: this.submitForm,
-      cancelEdit: this.cancelEdit,
-      cancelReply: this.cancelReply,
-      cancelForward: this.cancelForward,
-    };
+    const {room, clientUpdating, messageList, getRoomMessage, chatPeerVerified} = this.props;
+    const {selectedCount, selectedList, toolbarActions} = this.state;
     if (!room) {
       return null;
     }
-    const toolbarActions = this.getToolbarAction();
     return (
       <RoomHistoryComponent
-        Form={Form}
         roomId={room.id}
         roomType={room.type}
         roomTitle={room.title}
@@ -773,11 +631,11 @@ class RoomHistoryScreen extends PureComponent {
         isPublic={room.groupType === Proto.GroupRoom.Type.PUBLIC_ROOM || room.channelType === Proto.ChannelRoom.Type.PUBLIC_ROOM}
         roomMute={room.roomMute === Proto.RoomMute.MUTE}
         joinBoxToggle={this.joinBoxToggle}
-        messageList={messageList}
+        messageList={messageList || []}
         selectedList={selectedList}
         selectedCount={selectedCount}
         getRoomMessage={getRoomMessage}
-        getRoomMessageType={getRoomMessageType}
+        controlSendBox={this.controlSendBox}
         cancelSelected={this.cancelSelected}
         goRoomInfoBtn={this.goRoomInfoBtn}
         onMessagePress={this.onMessagePress}
@@ -789,8 +647,11 @@ class RoomHistoryScreen extends PureComponent {
         onRoomHistoryMorePress={this.onRoomHistoryMorePress}
         actionSheetControl={this.actionSheetControl}
         onScroll={this.onScroll}
-        forwardModalControl={this.forwardModalControl}
         goBack={this.props.navigation.goBack}
+        verified={room.channelVerified || chatPeerVerified}
+        startAvatarDownload={this.startAvatarDownload}
+        stopAvatarDownload={this.stopAvatarDownload}
+        selectedBackGround={this.state.selectedBackGround}
       />
     );
   }
@@ -798,13 +659,14 @@ class RoomHistoryScreen extends PureComponent {
 
 const makeMapStateToProps = () => {
   return (state, props) => {
+    const chatPeer = getRoomPeer(state, props);
     return {
       room: getRoom(state, props),
       messageList: getRoomMessageList(state, props),
       getRoomMessage: getEntitiesRoomMessageFunc(state),
-      getRoomMessageType: getEntitiesRoomMessageTypeFunc(state),
-      getRegisteredUser: getUserFunc(state),
       clientUpdating: state.clientUpdating,
+      chatPeerVerified: chatPeer ? chatPeer.verified : null,
+      chatUserName: chatPeer ? chatPeer.username : null,
     };
   };
 };
@@ -817,6 +679,17 @@ const mapDispatchToProps = (dispatch) => {
 
     editRoom: (roomId, payload, updateDb) => {
       dispatch(entitiesRoomEdit(roomId, payload, updateDb));
+    },
+
+    download: (attachment) => {
+      dispatch(fileManagerDownload(
+        FILE_MANAGER_DOWNLOAD_MANNER.AUTO,
+        attachment.getToken(),
+        Proto.FileDownload.Selector.FILE,
+        attachment.getSize(),
+        attachment.getCacheId(),
+        attachment.getName(),
+        priority--));
     },
   };
 };

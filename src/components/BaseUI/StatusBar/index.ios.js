@@ -3,21 +3,23 @@ import {uniqueId} from 'lodash';
 import {View} from 'react-native';
 import {MemoizeResponsiveStyleSheet, responsive} from '../../../modules/Responsive';
 import {ORIENTATION_PORTRAIT} from '../../../constants/screenBreakPoints';
-const id = uniqueId();
+import {appTheme} from '../../../themes/default/index';
 
+const uId = uniqueId();
 const styleSheet = [
-  id,
-  [
+  uId,
+  () => [
     {
       query: ORIENTATION_PORTRAIT,
       style: {
         container: {
           height: 20,
-          backgroundColor: '#e5e5e5',
+          backgroundColor: appTheme.statusBar,
         },
       },
     },
   ],
+  true,
 ];
 
 class StatusBar extends React.Component {

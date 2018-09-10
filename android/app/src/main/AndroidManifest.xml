@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="iGap.Plus"
-          android:versionCode="8"
-          android:versionName="1.0.6">
+          android:versionCode="16"
+          android:versionName="1.2.2">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
@@ -15,6 +15,8 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.READ_PROFILE"/>
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-sdk
             android:minSdkVersion="16"
             android:targetSdkVersion="25"/>
@@ -24,21 +26,33 @@
             android:allowBackup="false"
             android:label="@string/app_name"
             android:icon="@mipmap/ic_launcher"
+            android:supportsRtl="true"
             android:theme="@style/AppTheme">
         <activity
                 android:name=".MainActivity"
                 android:label="@string/app_name"
                 android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
-                android:windowSoftInputMode="adjustResize">
+                android:windowSoftInputMode="adjustResize"
+                android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="igap.net" android:scheme="http" />
+                <data android:host="igap.net" android:scheme="https" />
+                <data android:host="resolve" android:scheme="igap" />
+                <data android:host="join" android:scheme="igap" />
+            </intent-filter>
+
         </activity>
         <activity android:name="com.facebook.react.devsupport.DevSettingsActivity"/>
         <meta-data
                 android:name="com.google.android.geo.API_KEY"
-                android:value="AIzaSyAhMmHvy9fL7-Rdz4D25QTFIKgiB5pe-TE"/>
+                android:value="AIzaSyAzszDa0se_3fW1gq2-MZIwLVzhi1m2QNg"/>
             <provider
                     android:name="android.support.v4.content.FileProvider"
                     android:authorities="${applicationId}.provider"
@@ -48,6 +62,23 @@
                         android:name="android.support.FILE_PROVIDER_PATHS"
                         android:resource="@xml/filepaths" />
             </provider>
+        <service android:name="io.invertase.firebase.messaging.RNFirebaseMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service android:name="io.invertase.firebase.messaging.RNFirebaseInstanceIdService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+            </intent-filter>
+        </service>
+        <service android:name="io.invertase.firebase.messaging.RNFirebaseBackgroundMessagingService" />
+        <meta-data
+                android:name="com.google.firebase.messaging.default_notification_icon"
+                android:resource="@mipmap/ic_launcher" />
+        <meta-data
+                android:name="com.google.firebase.messaging.default_notification_channel_id"
+                android:value="iGap-Plus-Channel"/>
     </application>
 
 </manifest>

@@ -19,7 +19,8 @@ import {
   GroupLeft,
   Proto,
   UserContactsBlock,
-  UserContactsDelete, UserContactsUnblock,
+  UserContactsDelete,
+  UserContactsUnblock,
 } from '../../modules/Proto/index';
 import {
   CHANNEL_ADD_MEMBER,
@@ -42,15 +43,17 @@ import Api from '../../modules/Api/index';
 import {getCountRoomHistory} from '../../selector/methods/client/index';
 import {
   goAvatarList,
-  goCall, goContactEdit,
+  goCall,
+  goContactEdit,
   goContactPicker,
+  goRoomCreate,
   goRoomEdit,
   goRoomHistory,
   goRoomInviteLink,
   goRoomMemberList,
   goRoomUpdateUsername,
 } from '../../navigators/SecondaryNavigator';
-import i18n from '../../i18n/en';
+import i18n from '../../i18n/index';
 import {resetSecondaryNavigation} from '../../navigators/index';
 import Long from 'long';
 import {getCallPermission} from '../../selector/methods/signaling/callPermissin';
@@ -59,6 +62,7 @@ import {dispatchMessengerRoomAddList} from '../../utils/messenger';
 import {deleteContact} from '../../actions/methods/user/contacts/getList';
 import {apiInvoke as userApiInvoke} from '../../modules/Entities/RegisteredUsers/index';
 import {getIsBlockFunc} from '../../selector/methods/user/contacts/block';
+import {ROOM_CREATE_SCREEN_TYPE_GROUP} from '../../constants/app';
 
 const actions = {
   image: 'image', video: 'video', audio: 'audio', voice: 'voice', file: 'file', link: 'link',
@@ -71,7 +75,7 @@ class RoomInfoScreen extends Component {
     super(props);
     const {room} = this.props;
     this.state = {
-      roomMute: room.roomMute,
+      roomMute: room && room.roomMute,
       access: {
         canSendMessage: false,
         canCall: false,
@@ -94,10 +98,14 @@ class RoomInfoScreen extends Component {
     const {roomId} = this.props.navigation.state.params;
     await putState(roomId);
     const {room} = this.props;
+    if (!room) {
+      return;
+    }
     this.setRoomActionsAccess(this.props);
     const clientCountRoomHistory = new ClientCountRoomHistory();
     clientCountRoomHistory.setRoomId(room.longId);
     await Api.invoke(CLIENT_COUNT_ROOM_HISTORY, clientCountRoomHistory);
+    this.setState({roomMute: room.roomMute});
   }
 
   componentWillReceiveProps(nextProps) {
@@ -192,6 +200,9 @@ class RoomInfoScreen extends Component {
     const {access} = this.state;
 
     goContactPicker(i18n.roomInfoAddMemberToolbarTitle, async (contacts) => {
+      if (access.isChat) {
+        return goRoomCreate(ROOM_CREATE_SCREEN_TYPE_GROUP, contacts, room.longId);
+      }
       const promiseList = [];
       contacts.forEach(function(userId) {
         const addMemberActionId = access.isGroup ? GROUP_ADD_MEMBER : CHANNEL_ADD_MEMBER;
@@ -276,10 +287,7 @@ class RoomInfoScreen extends Component {
   toggleMute = () => {
     const {room} = this.props;
     let {roomMute} = this.state;
-    if (roomMute !== room.roomMute) {
-      return;
-    }
-    roomMute = room.roomMute === Proto.RoomMute.UNMUTE ? Proto.RoomMute.MUTE : Proto.RoomMute.UNMUTE;
+    roomMute = roomMute === Proto.RoomMute.UNMUTE ? Proto.RoomMute.MUTE : Proto.RoomMute.UNMUTE;
     const clientMuteRoom = new ClientMuteRoom();
     clientMuteRoom.setRoomId(room.longId);
     clientMuteRoom.setRoomMute(roomMute);
@@ -299,7 +307,8 @@ class RoomInfoScreen extends Component {
       case 2:
         roomPeer.mutual && this.deleteContact(confirm);
         break;
-      default: break;
+      default:
+        break;
     }
   };
 
@@ -341,6 +350,7 @@ class RoomInfoScreen extends Component {
       return null;
     }
 
+    const chatPeerVerified = roomPeer ? roomPeer.verified : null;
     return (
       <RoomViewComponent
         room={room}
@@ -368,6 +378,7 @@ class RoomInfoScreen extends Component {
         isBlock={roomPeer ? getIsBlockFunc(roomPeer.id) : false}
         goBack={this.props.navigation.goBack}
         callAction={callAction}
+        verified={room.channelVerified || chatPeerVerified}
       />
     );
   }

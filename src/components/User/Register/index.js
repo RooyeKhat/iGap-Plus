@@ -8,21 +8,21 @@ import {FormattedMessage, injectIntl, intlShape} from 'react-intl';
 import i18n from '../../../i18n/index';
 import Form from '../../BaseUI/Form/index';
 import TextInputField from '../../BaseUI/Form/fields/TextInputField';
-import * as _ from 'lodash';
+import {uniqueId} from 'lodash';
 import DimensionLimiter from '../../BaseUI/DimensionLimiter/index';
 import {NORMAL_HEIGHT, NORMAL_WIDTH} from '../../../constants/screenBreakPoints';
 import {MemoizeResponsiveStyleSheet, responsive} from '../../../modules/Responsive';
 import LinerLogo from '../../../assets/images/linerLogo';
 import ConnectionStatus from '../../../containers/Unit/ConnectionStatus';
+import Linking from '../../../modules/Linking/index';
+import {appTheme} from '../../../themes/default/index';
 
-const uniqueId = _.uniqueId();
+const _uniqueId = uniqueId();
 
 class UserRegisterComponent extends React.Component {
-  static contextTypes = {
-    uiTheme: PropTypes.object.isRequired,
-  };
+
   getStyles = () => {
-    return MemoizeResponsiveStyleSheet(styleSheet(this.context.uiTheme.UserRegister));
+    return MemoizeResponsiveStyleSheet(styleSheet);
   };
 
   render() {
@@ -34,18 +34,18 @@ class UserRegisterComponent extends React.Component {
     const OS = Platform.OS;
 
     return (
-      <DimensionLimiter id={uniqueId} width={NORMAL_WIDTH} height={NORMAL_HEIGHT} layoutStyle={styles.layout}>
-        <View style={styles.wrapper}>
+      <DimensionLimiter id={_uniqueId} width={NORMAL_WIDTH} height={NORMAL_HEIGHT} wrapperStyle={styles.wrapper}>
+        <View style={styles.layout}>
           <ConnectionStatus showAuthenticating={false}/>
 
           <View style={styles.topWrap}>
 
-            {/*<View style={styles.changeLanguageWrap}>*/}
-            {/*<Picker headerTitle={<FormattedMessage {...i18n.registerChangeLanguagePlaceholder} />}*/}
-            {/*style={styles.changeLanguagePicker}*/}
-            {/*options={localesList} onItemSelect={selectNewLocale}*/}
-            {/*placeHolder={<FormattedMessage {...i18n.registerChangeLanguagePlaceholder} />}/>*/}
-            {/*</View>*/}
+            <View style={styles.changeLanguageWrap}>
+              <Picker headerTitle={<FormattedMessage {...i18n.registerChangeLanguagePlaceholder} />}
+                style={styles.changeLanguagePicker}
+                options={localesList} onItemSelect={selectNewLocale}
+                placeHolder={<FormattedMessage {...i18n.registerChangeLanguagePlaceholder} />}/>
+            </View>
 
             <View style={styles.headerWrapper}>
               <View style={styles.svgWrap}>
@@ -57,7 +57,7 @@ class UserRegisterComponent extends React.Component {
                   <Text style={styles.headerTitle}>
                     {intl.formatMessage(i18n.iGap)}
                   </Text>
-                  <MCIcon name={'plus-box'} size={25}/>
+                  <MCIcon name={'plus-box'} size={25} color={appTheme.primaryText}/>
                 </View>) : null}
 
             </View>
@@ -111,11 +111,18 @@ class UserRegisterComponent extends React.Component {
                     this.form.loadingOff();
                   }
                 }} upperCase={false} style={styles.btnSubmit}/>
-              <Button upperCase={false}
-                style={styles.privacyBtn}
-                onPress={goPrivacyPolicy}
-                text={intl.formatMessage(i18n.registerPrivacyBtnTitle)}
-                icon={<MCIcon color="#7d7d7d" name="alert-decagram" size={14}/>}/>
+              <View style={styles.privacy}>
+                <Button upperCase={false}
+                  style={styles.privacyBtn}
+                  onPress={goPrivacyPolicy}
+                  text={intl.formatMessage(i18n.registerTermsOfService)}
+                  icon={<MCIcon color="#7d7d7d" name="alert-decagram" size={14}/>}/>
+                <Button upperCase={false}
+                  style={styles.privacyBtn}
+                  onPress={() => Linking.openURL('https://www.igap.net/privacy.html')}
+                  text={intl.formatMessage(i18n.registerPrivacyBtnTitle)}
+                  icon={<MCIcon color="#7d7d7d" name="information-outline" size={14}/>}/>
+              </View>
             </View>
 
             <View style={styles.divider}>
@@ -128,7 +135,7 @@ class UserRegisterComponent extends React.Component {
 
             <Button upperCase={false} primary style={styles.qrLoginBtn} onPress={goUserQrCodeLoginScreen}
               text={intl.formatMessage(i18n.registerQrCodeLoginBtn)}
-              icon={<MCIcon color="#3298ee" name="qrcode-scan" size={14}/>}/>
+              icon={<MCIcon color={appTheme.primary} name="qrcode-scan" size={14}/>}/>
 
           </Form>
         </View>

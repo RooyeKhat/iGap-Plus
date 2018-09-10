@@ -2,23 +2,27 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
-import {Button, Confirm, ListItem, MCIcon, Switch, Toolbar, Avatar as CircleIcon, PopupMenu} from '../../BaseUI/index';
+import {Avatar as CircleIcon, Button, Confirm, ListItem, MCIcon, PopupMenu, Switch, Toolbar} from '../../BaseUI/index';
 import i18n from '../../../i18n/index';
 import Avatar from '../../../containers/Unit/Avatar';
 import {MemoizeResponsiveStyleSheet} from '../../../modules/Responsive';
 import styleSheet from './index.styles';
-import {gray950, textTitleStyle} from '../../../themes/default/index';
+import {appTheme} from '../../../themes/default/index';
 import {APP_MODAL_ID_SECONDARY} from '../../../constants/app';
 import RichTextView from '../../../modules/RichTextView/index';
 import {Proto} from '../../../modules/Proto/index';
 import RoomStatus from '../../../containers/Unit/RoomStatus';
+import {getUserId} from '../../../utils/app';
+import Verify from '../../../assets/images/verify';
+import {arrowBackIcon} from '../../BaseUI/Utile/index';
 
 class RoomInfoComponent extends React.Component {
   render() {
     const {
       intl, room, roomPeer, roomMute, access, countRoomHistory, sendMessage, callUser, leaveRoom, joinRoom, editRoom, actionClick, actions,
-      addMember, memberList, notification, updateUsername, revokeLink, clearHistory, deleteRoom, goAvatarList, toggleMute, goBack, callAction,
-      isBlock, onActionListPress} = this.props;
+      addMember, memberList, notification, updateUsername, revokeLink, clearHistory, deleteRoom, goAvatarList, toggleMute, goBack, callAction, verified,
+      isBlock, onActionListPress,
+    } = this.props;
     const styles = this.getStyles();
 
     let description;
@@ -31,24 +35,33 @@ class RoomInfoComponent extends React.Component {
     }
 
     const actionList = [];
-    if (roomPeer && roomPeer.mutual) {
-      actionList.push(intl.formatMessage(i18n.roomInfoEditContact));
-      actionList.push(intl.formatMessage(isBlock ? i18n.roomInfoUnBlockContact : i18n.roomInfoBlockContact));
-      actionList.push(intl.formatMessage(i18n.roomInfoDeleteContact));
-    } else if (roomPeer) {
-      actionList.push(intl.formatMessage(isBlock ? i18n.roomInfoUnBlockContact : i18n.roomInfoBlockContact));
+    if (roomPeer && roomPeer.id !== getUserId(true)) {
+      if (roomPeer.mutual) {
+        actionList.push(intl.formatMessage(i18n.roomInfoEditContact));
+        actionList.push(intl.formatMessage(isBlock ? i18n.roomInfoUnBlockContact : i18n.roomInfoBlockContact));
+        actionList.push(intl.formatMessage(i18n.roomInfoDeleteContact));
+      } else {
+        actionList.push(intl.formatMessage(isBlock ? i18n.roomInfoUnBlockContact : i18n.roomInfoBlockContact));
+      }
     }
     return (
       <View style={styles.container}>
         <Toolbar
-          leftElement="arrow-back"
-          onLeftElementPress={goBack}
+          leftElement={arrowBackIcon(goBack)}
           rightElement={roomPeer ? (
             <PopupMenu
               actionList={actionList}
               type={APP_MODAL_ID_SECONDARY}
-              onPress={(idx) => {onActionListPress(idx, this.confirm); }}/>) : null}
-          centerElement={<Text numberOfLines={1} style={textTitleStyle}>{room.title}</Text>}/>
+              onPress={(idx) => {
+                onActionListPress(idx, this.confirm);
+              }}/>) : null}
+          centerElement={
+            <View style={styles.rowTitle}>
+              <Text numberOfLines={1} style={styles.titleText}>{room.title}</Text>
+              {verified && <Verify style={styles.verifyStyle}/>}
+            </View>
+          }
+        />
 
         <ScrollView style={styles.scroll}>
 
@@ -62,15 +75,18 @@ class RoomInfoComponent extends React.Component {
               <View style={styles.iconsLayout}>
                 {(callAction.voice && access.canCall) &&
                 <TouchableOpacity onPress={() => callUser('voice')}>
-                  <CircleIcon icon={'phone'} iconSize={25} size={40} iconColor={gray950} style={styles.circleIcon}/>
+                  <CircleIcon icon={'phone'} iconSize={25} size={40} iconColor={appTheme.icon}
+                    style={styles.circleIcon}/>
                 </TouchableOpacity>}
                 {(callAction.video && access.canCall) &&
                 <TouchableOpacity onPress={() => callUser('video')} style={{marginLeft: 10, marginRight: 10}}>
-                  <CircleIcon icon={'videocam'} iconSize={28} size={40} iconColor={gray950} style={styles.circleIcon}/>
+                  <CircleIcon icon={'videocam'} iconSize={28} size={40} iconColor={appTheme.icon}
+                    style={styles.circleIcon}/>
                 </TouchableOpacity>}
                 {access.canSendMessage &&
                 <TouchableOpacity onPress={sendMessage}>
-                  <CircleIcon icon={'chat'} iconSize={22} size={40} iconColor={gray950} style={styles.circleIcon}/>
+                  <CircleIcon icon={'chat'} iconSize={22} size={40} iconColor={appTheme.icon}
+                    style={styles.circleIcon}/>
                 </TouchableOpacity>}
               </View>
 
@@ -106,11 +122,25 @@ class RoomInfoComponent extends React.Component {
 
             <View style={styles.section}>
               <ListItem
-                centerElement={<View style={styles.roomTitleWrap}>
-                  <Text style={styles.roomTitle}>{room.title}</Text>
-                  <Text style={styles.roomStatus}><RoomStatus roomId={room.id}/></Text>
-                </View>}
-              />
+                centerElement={
+                  <View style={styles.rowTitle}>
+                    <Text numberOfLines={1} style={styles.roomTitle}>{room.title}</Text>
+                    {verified && <Verify style={styles.verifyStyle}/>}
+                  </View>}/>
+              <ListItem
+                centerElement={
+                  <View style={styles.roomTitleWrap}>
+                    <Text style={styles.roomStatus}><RoomStatus roomId={room.id}/></Text>
+                  </View>}/>
+
+              {(roomPeer && roomPeer.mutual) && (
+                <ListItem
+                  centerElement={{
+                    primaryText: roomPeer.phone.toString(),
+                    secondaryText: intl.formatMessage(i18n.roomInfoPhone),
+                  }}
+                />
+              )}
               {(description) && (<View style={styles.roomDescription}><RichTextView rawText={description}/></View>)}
               {(room.groupPublicUsername || room.channelPublicUsername || (roomPeer && roomPeer.username)) && (
                 <ListItem
@@ -326,6 +356,7 @@ RoomInfoComponent.propTypes = {
   callAction: PropTypes.object.isRequired,
   onActionListPress: PropTypes.func.isRequired,
   isBlock: PropTypes.bool.isRequired,
+  verified: PropTypes.bool,
 };
 
 export default injectIntl(RoomInfoComponent);

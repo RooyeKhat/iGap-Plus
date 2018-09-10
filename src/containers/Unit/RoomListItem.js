@@ -1,12 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import i18n from '../../i18n';
-import {FormattedMessage} from 'react-intl';
 import RoomListItemComponent from '../../components/Unit/RoomListItem';
 import {connect} from 'react-redux';
 import {Proto} from '../../modules/Proto/index';
-import {getAuthorHash} from '../../utils/app';
-import {getRoom, getRoomLastMessage} from '../../selector/entities/room';
+import {getAuthorHash, getMessageTitle} from '../../utils/app';
+import {getRoom, getRoomLastMessage, getRoomPeer} from '../../selector/entities/room';
 
 class RoomListItem extends React.PureComponent {
 
@@ -23,7 +21,7 @@ class RoomListItem extends React.PureComponent {
   };
 
   render() {
-    const {room, lastMessage, selected, disablePin} = this.props;
+    const {room, lastMessage, selected, disablePin, chatPeerVerified} = this.props;
     if (!room) {
       return null;
     }
@@ -31,8 +29,8 @@ class RoomListItem extends React.PureComponent {
     const authorHash = getAuthorHash();
     const ownerLastMessage = lastMessage && authorHash === lastMessage.authorHash;
     const lastMessageStatus = ownerLastMessage && room.type !== Proto.Room.Type.CHANNEL ? lastMessage.status : false;
-
-    const lastMessageTitle = this.getMessageTitle(lastMessage);
+    const verified = chatPeerVerified || room.channelVerified;
+    const lastMessageTitle = getMessageTitle(lastMessage);
 
     return (<RoomListItemComponent roomId={room.id}
       roomTitle={room.title}
@@ -47,20 +45,8 @@ class RoomListItem extends React.PureComponent {
       lastMessageStatue={lastMessageStatus}
       onPress={this.onRoomPress}
       onLongPress={this.onLongPress}
+      verified={verified}
     />);
-  }
-
-  getMessageTitle = (message) => {
-    if (!message || message.deleted) {
-      return null;
-    }
-    if (message.message) {
-      return message.message;
-    }
-    if (message.forwardFrom) {
-      return this.getMessageTitle(message.forwardFrom);
-    }
-    return <FormattedMessage {...i18n.roomListLastMessageTitle} values={{type: message.messageType}}/>;
   }
 }
 
@@ -73,9 +59,11 @@ RoomListItem.propTypes = {
 };
 
 const mapStateToProps = (state, props) => {
+  const chatPeer = getRoomPeer(state, props);
   return {
     room: getRoom(state, props),
     lastMessage: getRoomLastMessage(state, props),
+    chatPeerVerified: chatPeer ? chatPeer.verified : null,
   };
 };
 
